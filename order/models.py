@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-from store.models import Product
+from store.models import Perfume
 
 # Create your models here.
 class Order(models.Model):
@@ -24,7 +24,7 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, related_name='items', on_delete=models.CASCADE)
+    perfume = models.ForeignKey(Perfume, related_name='items', on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     quantity = models.IntegerField(default=1)
 

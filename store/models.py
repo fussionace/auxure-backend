@@ -7,7 +7,7 @@ class Category(models.Model):
     title = models.CharField(max_length=200)
     category_id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, unique=True)
     slug = models.SlugField(default= None)
-    featured_product = models.OneToOneField('Product', on_delete=models.CASCADE, blank=True, null=True, related_name='featured_product')
+    featured_product = models.OneToOneField('Perfume', on_delete=models.CASCADE, blank=True, null=True, related_name='featured_product')
     icon = models.CharField(max_length=100, default=None, blank = True, null=True)
 
     def __str__(self):
@@ -15,7 +15,7 @@ class Category(models.Model):
 
     
 
-class Product(models.Model):
+class Perfume(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     discount = models. BooleanField(default=False)
@@ -32,8 +32,8 @@ class Product(models.Model):
         return self.name
 
 
-class ProductImage(models.Model):
-    product = models.ForeignKey(Product, related_name="images", on_delete=models.CASCADE)
+class PerfumeImage(models.Model):
+    perfume = models.ForeignKey(Perfume, related_name="images", on_delete=models.CASCADE)
     image = models.ImageField(upload_to="img", default="", null=True, blank=True)
 
 
@@ -47,12 +47,12 @@ class Cart(models.Model):
 
 class Cartitems(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items', blank=True, null=True)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, blank=True, null=True, related_name='cartitems')
+    perfume = models.ForeignKey(Perfume, on_delete=models.CASCADE, blank=True, null=True, related_name='cartitems')
     quantity = models.PositiveSmallIntegerField(default=0)
 
 
 class Review(models.Model):
-    product = models.ForeignKey("Product", on_delete=models.CASCADE, related_name = "reviews")
+    perfume = models.ForeignKey("Perfume", on_delete=models.CASCADE, related_name = "reviews")
     date_created = models.DateTimeField(auto_now_add=True)
     description = models.TextField(default="description")
     name = models.CharField(max_length=50)
