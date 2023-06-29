@@ -14,6 +14,8 @@ router = routers.DefaultRouter()
 router.register("perfumes", views.PerfumesViewSet)
 router.register("categories", views.CategoriesViewSet)
 router.register("carts", views.CartViewSet)
+router.register(r'orders', views.OrderViewSet)
+
 
 # Creating the router to be able to view the particular review for a particular product
 # Child routers

@@ -1,32 +1,59 @@
 from django.contrib.auth.models import User
 from django.db import models
-
+import random
+import string
+import time
 from store.models import Perfume
 
 # Create your models here.
 class Order(models.Model):
+    ORDERED = 'ordered'
+    SHIPPED = 'shipped'
+
+    STATUS_CHOICHES = (
+        (ORDERED, 'Ordered'),
+        (SHIPPED, 'Shipped')
+    )
     user = models.ForeignKey(User, related_name='orders', on_delete=models.CASCADE)
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    email = models.CharField(max_length=100)
-    address = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100, null=False)
+    last_name = models.CharField(max_length=100 , null=False)
+    email = models.EmailField(max_length=100 , null=False)
+    country = models.CharField(max_length=100 , null=False)
+    city = models.CharField(max_length=100 , null=False)
+    state = models.CharField(max_length=100 , null=False)
+    additional_info = models.TextField(null=False)
+    address = models.TextField()
     zipcode = models.CharField(max_length=100)
-    phone = models.CharField(max_length=100)
+    phone = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
-    paid_amount = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-    payment_gateway_token = models.CharField(max_length=100)
+    updated_at = models.DateTimeField(auto_now=True)
+    order_number = models.CharField(max_length=20, unique=True)
+    total_amount = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    #payment_mode = models.CharField(max_length=250)
+    payment_gateway_token = models.CharField(max_length=250)
+    is_completed = models.BooleanField(default=False)
+    is_cancelled = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICHES, default=ORDERED)
 
     class Meta:
         ordering = ['-created_at',]
     
     def __str__(self):
         return self.first_name
+    
+    def generate_order_number(self):
+        random_chars = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        timestamps = int(time.time() * 1000)
+        self.order_number = f"AUX-{random_chars}-{timestamps}"
+        self.save()
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
-    perfume = models.ForeignKey(Perfume, related_name='items', on_delete=models.CASCADE)
+    product = models.ForeignKey(Perfume, related_name='items', on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=8, decimal_places=2)
-    quantity = models.IntegerField(default=1)
+    quantity = models.PositiveIntegerField(default=1)
+    sub_total = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
         return '%s' % self.id
