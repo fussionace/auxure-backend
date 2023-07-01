@@ -7,10 +7,11 @@ from rest_framework_nested import routers
 
 
 # Url endpoints for modelviewsets
-# Parent router
-router = routers.DefaultRouter()
 
 # Parent routers
+# Parent router for the nested router
+router = routers.DefaultRouter()
+# Parent router for the other endpoints
 router.register("perfumes", views.PerfumesViewSet)
 router.register("categories", views.CategoriesViewSet)
 router.register("carts", views.CartViewSet)
@@ -19,13 +20,14 @@ router.register("carts", views.CartViewSet)
 # Child routers
 # perfume child router
 perfume_router = routers.NestedDefaultRouter(router, "perfumes", lookup="perfume")
-# perfume_router.register("reviews", views.ReviewViewSet, basename="perfume-reviews")
+perfume_router.register("reviews", views.ReviewViewSet, basename="perfume-reviews") 
 
 # cart child router
 cart_router = routers.NestedDefaultRouter(router, "carts", lookup="cart")
 cart_router.register("items", views.CartItemViewSet, basename="cart-items")
 
-# http://127.0.0.1:8000/api/products/a28a9e75-8c04-4754-a931-7f945ab33550/reviews/
+# http://127.0.0.1:8000/api/perfumes/a28a9e75-8c04-4754-a931-7f945ab33550/reviews/  
+# The id within the url is for the specific product so the review will be automatically dropped for that product
 # http://127.0.0.1:8000/api/carts/
 
 urlpatterns = [
