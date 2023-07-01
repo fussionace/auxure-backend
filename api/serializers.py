@@ -2,6 +2,8 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from store.models import Perfume, PerfumeImage, Category, Review, Cart, Cartitems
 
+# userProfile models
+from userprofile.models import UserProfile
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -125,3 +127,35 @@ class CartSerializer(serializers.ModelSerializer):
         items = cart.items.all()
         total = sum([item.quantity * item.perfume.price for item in items])
         return total
+    
+
+
+
+
+
+
+
+# userProfile serialization
+
+class CreateUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        # fields = ['username', 'password']
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'password']
+        extra_kwargs = {'password': {'write_only': True}}
+    
+    # def create(self, validated_data):
+    #     user = User(username=validated_data['username'])
+    #     user.set_password(validated_data['password'])
+    #     user.save()
+    #     return user
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    user = UserProfile
+    
+    class Meta:
+        model = UserProfile
+        fields = '__all__'
+
+
