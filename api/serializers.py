@@ -128,41 +128,37 @@ class CartSerializer(serializers.ModelSerializer):
         return total
     
 class OrderItemSerializer(serializers.ModelSerializer):
-    Product = PerfumeSerializer()
 
     class Meta:
         model = OrderItem
         fields = ['id','product','price','quantity','sub_total']
 
 class OrderSerializer(serializers.ModelSerializer):
-    items = OrderItemSerializer(many=True)
+    items = OrderItemSerializer(many=True, read_only=True)
     is_completed = serializers.BooleanField(read_only=True)
     is_cancelled = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Order
-        fields = ['id','user','first_name','last_name','email','country','city','state','additional_info','address','zipcode','phone','created_at','paid_amount','is_completed','is_cancelled','status','items',]
-
-        def create(self, validated_data):
-            items_data = validated_data.pop('items')
-            order = Order.objects.create(user=self.context['request'].user, **validated_data)
-            total_amount = 0
-            for item_data in items_data:
-                product_data = item_data.pop('product')
-                quantity = item_data['quantity']
-                product = Perfume.objects.get(pk=product_data['id'])
-                price = product.price
-                sub_total = price * quantity
-                if quantity > product.inventory:
-                    raise serializers.ValidationError(f"Insufficent inventory for product: {product.name}")
-                OrderItem.objects.create(order=order, product=product, quantity=quantity, price=price, sub_total=sub_total)
-                total_amount += sub_total
-                product.inventory -= quantity
-                product.save()
-            order.total_amount = total_amount
-            order.save()
-            return order
+        fields = ['id','user','first_name','last_name','email','country','city','state','additional_info','address','zipcode','order_number','phone','created_at','total_amount','is_completed','is_cancelled','status','items',]
+        read_only_fields = ['order_number']
 
 
-            
+    def create(self, validated_data):
+        user = self.context['request'].user
+        cart = Cart.objects.get(user=user)
 
+        order = Order.objects.create(user=user, **validated_data)
+        order.save()
+        cart_items = cart.items.all()
+        for cart_item in cart_items:
+            ordered_quantiy = cart_item.quantity
+            if ordered_quantiy > 0 :
+                product = cart_item.perfume
+                product_price = product.price
+                OrderItem.objects.create(order=order, product=product,quantity=ordered_quantiy,price=product_price, sub_total=product_price*ordered_quantiy )
+                cart_item.quantity -= ordered_quantiy
+                cart_item.save()
+        order.total_amount = sum(item.subtotal for item in order.items.all())
+        order.save()
+        return order

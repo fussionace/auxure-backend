@@ -7,12 +7,19 @@ from store.models import Perfume
 
 # Create your models here.
 class Order(models.Model):
-    ORDERED = 'ordered'
+    PENDING = 'pending'
+    PROCESSING = 'processing'
+    DELIVERED = 'delivered'
+    CANCELLED = 'cancelled'
     SHIPPED = 'shipped'
 
+
     STATUS_CHOICHES = (
-        (ORDERED, 'Ordered'),
-        (SHIPPED, 'Shipped')
+        (PENDING, 'Pending'),
+        (PROCESSING, 'Processing'),
+        (SHIPPED, 'Shipped'),
+        (DELIVERED, 'Delivered'),
+        (CANCELLED, 'Cancelled')
     )
     user = models.ForeignKey(User, related_name='orders', on_delete=models.CASCADE)
     first_name = models.CharField(max_length=100, null=False)
@@ -33,7 +40,7 @@ class Order(models.Model):
     payment_gateway_token = models.CharField(max_length=250)
     is_completed = models.BooleanField(default=False)
     is_cancelled = models.BooleanField(default=False)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICHES, default=ORDERED)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICHES, default=PENDING)
 
     class Meta:
         ordering = ['-created_at',]
