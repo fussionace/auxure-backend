@@ -135,19 +135,15 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
-    is_completed = serializers.BooleanField(read_only=True)
-    is_cancelled = serializers.BooleanField(read_only=True)
-
     class Meta:
         model = Order
         fields = ['id','user','first_name','last_name','email','country','city','state','additional_info','address','zipcode','order_number','phone','created_at','total_amount','is_completed','is_cancelled','status','items',]
-        read_only_fields = ['order_number']
+        read_only_fields = ['order_number','total_amount','status','user','is_completed','is_cancelled']
 
 
     def create(self, validated_data):
         user = self.context['request'].user
         cart = Cart.objects.get(user=user)
-
         order = Order.objects.create(user=user, **validated_data)
         order.save()
         cart_items = cart.items.all()
