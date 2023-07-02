@@ -6,7 +6,7 @@ from store.models import Perfume, PerfumeImage, Category, Review, Cart, Cartitem
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['category_id', 'title', 'slug']
+        fields = ['category_id', 'title', 'gender', 'slug']
 
 
 class PerfumeImageSerializer(serializers.ModelSerializer):
@@ -18,6 +18,7 @@ class PerfumeImageSerializer(serializers.ModelSerializer):
 
 class PerfumeSerializer(serializers.ModelSerializer):
     images = PerfumeImageSerializer(many=True, read_only=True)
+
     uploaded_images = serializers.ListField(
         child = serializers.ImageField(max_length=1000000, allow_empty_file=False, use_url=False),
         write_only=True
@@ -25,22 +26,27 @@ class PerfumeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Perfume
-        fields = ['id', 'name', 'description', 'price', 'inventory', 'images', 'uploaded_images']
+        fields = ['id', 'name', 'description', 'price', 'category', 'inventory', 'images', 'uploaded_images']
+    
+    # Serializing the category field to have more context 
+    # category = CategorySerializer()
+    
 
     def create(self, validated_data):
-        uploaded_images = validated_data.pop("uploaded_images")
+        uploaded_images = validated_data.pop("uploaded_images") # Removes the uploaded images from the list of data
         perfume = Perfume.objects.create(**validated_data) #unpacks the validated data
 
         for image in uploaded_images:
             new_perfume_image = PerfumeImage.objects.create(perfume=perfume, image=image)
 
         return perfume
+
     
 
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = ['id', 'date_created', 'name', 'description']
+        fields = ['id', 'date_created', 'customer_name', 'description']
     
     # Fxn below allows you to create the review for the particular perfume
     # The validated_data argument allows you grab all the relevant fields
@@ -49,7 +55,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         return Review.objects.create(perfume_id = perfume_id, **validated_data)
     
 
-
+# We need just a few fields to display on the cart, not the entire product fields, hence;
+# the need for the simpleproductserializer
 class SimplePerfumeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Perfume
@@ -61,10 +68,10 @@ class CartItemSerializer(serializers.ModelSerializer):
     # perfume = PerfumeSerializer(many=False)
     perfume = SimplePerfumeSerializer(many=False)
     sub_total = serializers.SerializerMethodField(method_name="total")
-    # Points the sub_total field to the total method below
+    # Points the sub_total field to the total function below
     class Meta:
         model = Cartitems
-        fields = ['id', 'cart', 'product', 'quantity', 'sub_total']
+        fields = ['id', 'cart', 'perfume', 'quantity', 'sub_total']
 
     def total(self, cartitem:Cartitems):
             return cartitem.quantity * cartitem.perfume.price
@@ -76,7 +83,7 @@ class AddCartItemSerializer(serializers.ModelSerializer):
     # Function to handle errors incase a wrong product id is sent
     def validate_product_id(self, value):
         if not Perfume.objects.filter(pk=value).exists():
-            raise serializers.ValidationError("The given Id does not have an associated product")
+            raise serializers.ValidationError("The given Id does not have an associated perfume")
         return value
 
     # Adding items to cart
