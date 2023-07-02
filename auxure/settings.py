@@ -129,6 +129,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 REST_FRAMEWORK = {
+    'PAGE_SIZE' : 3,
     'DEFAULT_PERMISSION_CLASSES': [
    'rest_framework.permissions.AllowAny',
 ]
