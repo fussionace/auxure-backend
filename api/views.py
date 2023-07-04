@@ -35,18 +35,54 @@ from rest_framework.exceptions import PermissionDenied
 
 from rest_framework_simplejwt.tokens import RefreshToken
 # Create your views here.
+# Initial view function, but did not allow the display of recommended products
+# class PerfumesViewSet(ModelViewSet):
+#     queryset = Perfume.objects.all()
+#     serializer_class = PerfumeSerializer
+#      Implementing filter and search
+#     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+#     filterset_class = PerfumeFilter
+#     search_fields = ['name', 'description']
+#     ordering_fields = ['price']     You can order by any other field or add other fields
+#      Implementing Pagination
+#     pagination_class = PageNumberPagination
+
+
+
+# The modified view function to also fetch similar perfumes and display on the perfume detail page
 class PerfumesViewSet(ModelViewSet):
     queryset = Perfume.objects.all()
     serializer_class = PerfumeSerializer
+
     # Implementing filter and search
-    # Line 25 below is giving some issues, rework on it
-    # filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = PerfumeFilter
     search_fields = ['name', 'description']
     ordering_fields = ['price']     #You can order by any other field or add other fields
     # Implementing Pagination
     pagination_class = PageNumberPagination
-    
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+
+        # Fetch similar perfumes based on title and gender
+        similar_perfumes = Perfume.objects.filter(
+            category__title=instance.category.title,
+            category__gender=instance.category.gender,
+            price__lte=instance.price + 50,   #Define your price range here
+            price__gte=instance.price - 50
+        ).exclude(id=instance.id)
+
+        similar_perfume_serializer = PerfumeSerializer(similar_perfumes, many=True)
+
+        # Combine the perfume details and similar perfumes in the response
+        response_data = {
+            'perfume': serializer.data,
+            'similar_perfumes': similar_perfume_serializer.data
+        }
+
+        return Response(response_data)
 
 
 class CategoriesViewSet(ModelViewSet):
@@ -58,7 +94,7 @@ class CategoriesViewSet(ModelViewSet):
 class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
 
-    # Method to get only the reviews for the particular perfume(single item)
+    # Since we need just specific reviews, so we create a fxn for the queryset
     def get_queryset(self):
         return Review.objects.filter(perfume_id=self.kwargs['perfume_pk'])
 
@@ -68,7 +104,8 @@ class ReviewViewSet(ModelViewSet):
 
 class CartViewSet(CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, GenericViewSet):
     # Inheriting from the modelviewset will be too heavy (covers 4 operations), the ListViewSet
-    # would've allowed users to view other people's cart which is not a good practice
+    # would've allowed users to view other people's cart which is not a good practice, for that we 
+    # only make use of 3 operations, hence the need to use the mixins in the generic viewset
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
 

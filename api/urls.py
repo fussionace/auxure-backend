@@ -9,10 +9,11 @@ from rest_framework_nested import routers
 from .views import UserProfileviewSet, CreateUser, LoginView
 
 # Url endpoints for modelviewsets
-# Parent router
-router = routers.DefaultRouter()
 
 # Parent routers
+# Parent router for the nested router
+router = routers.DefaultRouter()
+# Parent router for the other endpoints
 router.register("perfumes", views.PerfumesViewSet)
 router.register("categories", views.CategoriesViewSet)
 router.register("carts", views.CartViewSet)
