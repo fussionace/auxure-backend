@@ -3,12 +3,30 @@ import uuid
 
 
 # Create your models here.
+# class Category(models.Model):
+#     title = models.CharField(max_length=200)
+#     category_id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, unique=True)
+#     slug = models.SlugField(default= None)
+#     featured_product = models.OneToOneField('Perfume', on_delete=models.CASCADE, blank=True, null=True, related_name='featured_product')
+#     icon = models.CharField(max_length=100, default=None, blank = True, null=True)
+
+#     def __str__(self):
+#         return self.title
+
+
 class Category(models.Model):
+    GENDER_CHOICES = (
+        ('M', 'Male'),
+        ('F', 'Female'),
+        ('B', 'Both'),
+    )
+
     title = models.CharField(max_length=200)
     category_id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, unique=True)
-    slug = models.SlugField(default= None)
+    slug = models.SlugField(default=None)
     featured_product = models.OneToOneField('Perfume', on_delete=models.CASCADE, blank=True, null=True, related_name='featured_product')
-    icon = models.CharField(max_length=100, default=None, blank = True, null=True)
+    icon = models.CharField(max_length=100, default=None, blank=True, null=True)
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, default='B')
 
     def __str__(self):
         return self.title
@@ -55,7 +73,9 @@ class Review(models.Model):
     perfume = models.ForeignKey("Perfume", on_delete=models.CASCADE, related_name = "reviews")
     date_created = models.DateTimeField(auto_now_add=True)
     description = models.TextField(default="description")
-    name = models.CharField(max_length=50)
+    customer_name = models.CharField(max_length=50) 
+    # The name field refers to the name of the person dropping the review
+    # This should actually be grabbed from the logged in user
     
     def __str__(self):
         return self.description
