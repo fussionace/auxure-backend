@@ -17,6 +17,8 @@ router = routers.DefaultRouter()
 router.register("perfumes", views.PerfumesViewSet)
 router.register("categories", views.CategoriesViewSet)
 router.register("carts", views.CartViewSet)
+router.register(r'orders', views.OrderViewSet)
+
 
 
 # user profile route
