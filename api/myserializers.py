@@ -1,10 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from store.models import Perfume, PerfumeImage, Category, Review, Cart, Cartitems
-from order.models import Order, OrderItem
 
-# userProfile models
-from userprofile.models import UserProfile
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -135,63 +132,3 @@ class CartSerializer(serializers.ModelSerializer):
         items = cart.items.all()
         total = sum([item.quantity * item.perfume.price for item in items])
         return total
-    
-
-class OrderItemSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = OrderItem
-        fields = ['id','product','price','quantity','sub_total']
-
-class OrderSerializer(serializers.ModelSerializer):
-    items = OrderItemSerializer(many=True, read_only=True)
-    class Meta:
-        model = Order
-        fields = ['id','user','first_name','last_name','email','country','city','state','additional_info','address','zipcode','order_number','phone','created_at','total_amount','is_completed','is_cancelled','status','items',]
-        read_only_fields = ['order_number','total_amount','status','user','is_completed','is_cancelled']
-
-
-    def create(self, validated_data):
-        user = self.context['request'].user
-        cart = Cart.objects.get(user=user)
-        order = Order.objects.create(user=user, **validated_data)
-        order.save()
-        cart_items = cart.items.all()
-        for cart_item in cart_items:
-            ordered_quantiy = cart_item.quantity
-            if ordered_quantiy > 0 :
-                product = cart_item.perfume
-                product_price = product.price
-                OrderItem.objects.create(order=order, product=product,quantity=ordered_quantiy,price=product_price, sub_total=product_price*ordered_quantiy )
-                cart_item.quantity -= ordered_quantiy
-                cart_item.save()
-        order.total_amount = sum(item.subtotal for item in order.items.all())
-        order.save()
-        return order
-
-
-# userProfile serialization
-
-class CreateUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        # fields = ['username', 'password']
-        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'password']
-        extra_kwargs = {'password': {'write_only': True}}
-    
-    # def create(self, validated_data):
-    #     user = User(username=validated_data['username'])
-    #     user.set_password(validated_data['password'])
-    #     user.save()
-    #     return user
-
-
-class UserProfileSerializer(serializers.ModelSerializer):
-    user = UserProfile
-    
-    class Meta:
-        model = UserProfile
-        fields = '__all__'
-
-
-
