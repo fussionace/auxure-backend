@@ -36,7 +36,9 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=200)),
                 ('description', models.TextField(blank=True, null=True)),
                 ('discount', models.BooleanField(default=False)),
-                ('image', models.ImageField(blank=True, default='', null=True, upload_to='img')),
+
+                ('image', models.ImageField(blank=True, default='', null=True, upload_to='img/store')),
+
                 ('price', models.FloatField(default=100.0)),
                 ('slug', models.SlugField(blank=True, default=None, null=True)),
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False, unique=True)),
@@ -60,7 +62,9 @@ class Migration(migrations.Migration):
             name='PerfumeImage',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('image', models.ImageField(blank=True, default='', null=True, upload_to='img')),
+
+                ('image', models.ImageField(blank=True, default='', null=True, upload_to='img/store')),
+
                 ('perfume', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='images', to='store.perfume')),
             ],
         ),

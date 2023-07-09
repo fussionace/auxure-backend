@@ -142,14 +142,26 @@ REST_FRAMEWORK = {
    ],
     'PAGE_SIZE': 3,
 }
-# Add the JWT settings
+
+
 from datetime import timedelta
 
 # Configure token expiration time (optional)
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=2),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
+    # Activate this when you want to use bearer tokens in postman
+    "AUTH_HEADER_TYPES": ("Bearer",),
+
+    # Activate this when you want to work on the browser
+    # "AUTH_HEADER_TYPES": ("JWT",),
+}
+
+DJOSER = {
+    "SERIALIZER":{
+        "user_create": "api.serializers.MyUserCreateSerializer"
+    }
 }

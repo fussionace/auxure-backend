@@ -6,6 +6,20 @@ from order.models import Order, OrderItem
 # userProfile models
 from userprofile.models import UserProfile
 
+# Djoser authentication imports
+from djoser.serializers import UserCreateSerializer
+
+# djoser user serializer
+class MyUserCreateSerializer(UserCreateSerializer):
+    class Meta(UserCreateSerializer.Meta):
+        fields = ['id', 'username', 'password', 'email', "first_name", "last_name"]
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta(object):
+        model = User 
+        fields = ['id', 'username', 'password', 'email']
+
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
