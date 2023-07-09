@@ -37,19 +37,6 @@ from rest_framework.exceptions import PermissionDenied
 
 from rest_framework_simplejwt.tokens import RefreshToken
 # Create your views here.
-# Initial view function, but did not allow the display of recommended products
-# class PerfumesViewSet(ModelViewSet):
-#     queryset = Perfume.objects.all()
-#     serializer_class = PerfumeSerializer
-#      Implementing filter and search
-#     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-#     filterset_class = PerfumeFilter
-#     search_fields = ['name', 'description']
-#     ordering_fields = ['price']     You can order by any other field or add other fields
-#      Implementing Pagination
-#     pagination_class = PageNumberPagination
-
-
 
 # The modified view function to also fetch similar perfumes and display on the perfume detail page
 class PerfumesViewSet(ModelViewSet):

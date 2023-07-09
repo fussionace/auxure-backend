@@ -19,7 +19,9 @@ from api import views
 from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
+
 # Import for simplejwt
+
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -31,7 +33,8 @@ urlpatterns = [
     # path('', include('store.urls')),
     path("api/", include("api.urls")),
 
-    # Simplejwt
+    # Djoser and simplejwt urls
+
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.jwt')),
 
