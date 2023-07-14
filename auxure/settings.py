@@ -140,10 +140,9 @@ REST_FRAMEWORK = {
    'DEFAULT_PERMISSION_CLASSES': [
    'rest_framework.permissions.AllowAny',
    ],
-   'PAGE_SIZE': 3,
+    'PAGE_SIZE': 3,
 }
 
-# Add the JWT settings
 from datetime import timedelta
 
 # Configure token expiration time (optional)

@@ -136,19 +136,40 @@ class UpdateCartItemSerializer(serializers.ModelSerializer):
         fields = ['quantity']
 
 
+# Created the checkout serializer
+class CheckoutSerializer(serializers.Serializer):
+    cart_id = serializers.UUIDField()
+    # Add any additional fields required for the checkout process
+
+    def validate_cart_id(self, value):
+        if not Cart.objects.filter(pk=value).exists():
+            raise serializers.ValidationError("The given cart id does not exist")
+        return value
+
+    def save(self):
+        cart_id = self.validated_data['cart_id']
+        # Perform the necessary actions for checkout, such as creating an order, processing payment, etc.
+        # You can access the cart using Cart.objects.get(pk=cart_id)
+        # Implement the checkout logic according to your specific requirements
+        # Return any relevant data or success message
+        return "Checkout successful"
+
+
 class CartSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(read_only=True)
     # id should be read only since its generated from within
     items = CartItemSerializer(many=True, read_only=True)
     grand_total = serializers.SerializerMethodField(method_name="cart_total")
+    checkout = CheckoutSerializer(write_only=True) # Nested serializer for checkout
     class Meta:
         model = Cart
-        fields = ['id', 'items', 'grand_total']
+        fields = ['id', 'items', 'grand_total', 'checkout'] # Added the checkout field
 
     def cart_total(self, cart:Cart):
         items = cart.items.all()
         total = sum([item.quantity * item.perfume.price for item in items])
         return total
+
     
 
 class OrderItemSerializer(serializers.ModelSerializer):
