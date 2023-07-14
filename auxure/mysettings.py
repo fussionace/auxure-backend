@@ -43,8 +43,6 @@ INSTALLED_APPS = [
     'store',
     'order',
     'api',
-    'rest_framework.authtoken',
-    'djoser',
 ]
 
 MIDDLEWARE = [
@@ -132,35 +130,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 REST_FRAMEWORK = {
-
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-   'DEFAULT_PERMISSION_CLASSES': [
-   'rest_framework.permissions.AllowAny',
-   ],
-    'PAGE_SIZE': 3,
-}
-
-from datetime import timedelta
-
-# Configure token expiration time (optional)
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=2),
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
-    'UPDATE_LAST_LOGIN': True,
-    # Activate this when you want to use bearer tokens in postman
-    "AUTH_HEADER_TYPES": ("Bearer",),
-
-    # Activate this when you want to work on the browser
-    # "AUTH_HEADER_TYPES": ("JWT",),
-}
-
-DJOSER = {
-    "SERIALIZER":{
-        "user_create": "api.serializers.MyUserCreateSerializer"
-    }
-}
+    'PAGE_SIZE': 3
+}  

@@ -37,7 +37,7 @@ class Perfume(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     discount = models. BooleanField(default=False)
-    image = models.ImageField(upload_to = 'img',  blank = True, null=True, default='')
+    image = models.ImageField(upload_to = 'img/store',  blank = True, null=True, default='')
     price = models.FloatField(default=100.00)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, blank=True, null=True, related_name='products')
     slug = models.SlugField(default=None, blank=True, null=True)
@@ -52,7 +52,7 @@ class Perfume(models.Model):
 
 class PerfumeImage(models.Model):
     perfume = models.ForeignKey(Perfume, related_name="images", on_delete=models.CASCADE)
-    image = models.ImageField(upload_to="img", default="", null=True, blank=True)
+    image = models.ImageField(upload_to="img/store", default="", null=True, blank=True)
 
 
 class Cart(models.Model):
