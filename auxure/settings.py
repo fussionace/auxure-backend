@@ -141,7 +141,7 @@ REST_FRAMEWORK = {
    'rest_framework.permissions.AllowAny',
    ],
 
-
+}
 # Add the JWT settings
 from datetime import timedelta
 
