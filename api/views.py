@@ -1,11 +1,20 @@
 import requests
+import paystack
+import uuid
+import json
+import hmac 
+import hashlib
+from django.conf import settings
 from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from .serializers import PerfumeSerializer, CategorySerializer, ReviewSerializer, CartSerializer, CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer,OrderSerializer
 from store.models import Category, Perfume, Review, Cart, Cartitems
-from order.models import Order
+from order.models import Order, OrderItem
 from rest_framework.response import Response
 # Import for the viewset
+from rest_framework import status
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.decorators import action
 from rest_framework.mixins import CreateModelMixin,  RetrieveModelMixin, DestroyModelMixin
@@ -130,8 +139,22 @@ class CartItemViewSet(ModelViewSet):
     def get_serializer_context(self):
         return {"cart_id": self.kwargs["cart_pk"]}
     
-    
+class CartViewSet(ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = OrderSerializer
+
+    def create(self, request, *args, **kwargs):
+        paystack_secret_key = settings.PAYSTACK_SECRET_KEY
+        paystack.initialize(paystack_secret_key)
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+
+   
 class OrderViewSet(ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated,]
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
@@ -141,7 +164,7 @@ class OrderViewSet(ModelViewSet):
         if not order.is_cancelled:
             order.is_completed = True
             order.save()
-            return Response({'message': 'Oder completed succesfully'})
+            return Response({'message': 'Order completed succesfully'})
     
     @action(detail=True, methods=['post'])
     def cancel_order(self , request , pk=None):
@@ -158,6 +181,109 @@ class OrderViewSet(ModelViewSet):
         queryset = queryset.filter(user=self.request.user)
         return queryset
     
+    @action(detail=False, methods=['post'])
+    def checkout(self, request):
+        serializer = self.get_serializer(data=request.data)
+        #serializer.is_valid(raise_exeption=True)
+        if serializer.is_valid():
+            validated_data = serializer.validated_data
+        #products = serializer.validated_data['items']
+        #email = serializer.validated_data['email']
+        #total_amount = serializer.validated_data['total_amount']
+            reference = uuid.uuid4()
+
+            paystack_url = "https://api.paystack.co/transaction/initialize"
+            paystack_secret_key = settings.PAYSTACK_SECRET_KEY
+
+            order_data = {
+                "email": validated_data['email'],
+                "amount": int(validated_data['total_amount']*100),
+                "reference" : str(reference),
+                "callback_url": "http://127.0.0.1:8000/api/paystack-callback/"
+            }
+
+            headers = {
+                "Authorization" : f"Bearer {paystack_secret_key}",
+                "Content-Type": "application/json"
+            }
+
+            response = request.post(paystack_url, json=order_data, headers=headers)
+            if response.status_code == 200:
+                order_details = response.json()
+                access_code = order_details['data']['access_code']
+
+                order = Order.objects.create(user=request.user,reference=reference,**validated_data)
+
+                for item in validated_data['items']:
+                    product = Perfume.objects.get(id=item['product']['id'])
+                    OrderItem.objects.create(
+                        order = order,
+                        product = product,
+                        quantity = item['quantity'],
+                        price = item['price']
+                    )
+                paystack_payment_url = f"https://paystack.com/pay{access_code}"
+                return Response (
+                    {
+                        "id":order.id,
+                        "reference": order.reference,
+                        "redirect_url": paystack_payment_url,
+                        **validated_data
+                    },
+                    status=status.HTTP_200_OK
+                )
+            else:
+                return Response(
+                    {"error":"failed to create order."},
+                    status=response.status_code
+                )
+        else:
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    @csrf_exempt
+    def paystack_verify_callback(request):
+        if request.method == 'POST':
+            payload = request.body
+            signature = request.headers.get('X-Paystack-Signature')
+            paystack_secret_key = settings.PAYSTACK_SECRET_KEY
+
+            is_valid_signature = verify_paystack_signature(payload, signature, paystack_secret_key)
+
+            if not is_valid_signature:
+                return HttpResponse(status=400)
+
+            try:
+                data = json.loads(payload)
+                event = data.get('event')
+                reference = data.get('data').get('reference')
+                status = data.get('data').get('status')
+
+                if event == 'charge.success' and status == 'success':
+                    try:
+                        order = Order.objects.get(reference=reference)
+                        order.is_completed = True
+                        order.save()
+                        return HttpResponse(status=200)
+                    except Order.DoesNotExist:
+                        return HttpResponse(status=404)
+                elif event == 'charge.failure' and status == 'failed':
+                    try:
+                        order = Order.objects.get(reference=reference)
+                        order.is_cancelled = True
+                        order.save()
+                        return HttpResponse(status=200)
+                    except Order.DoesNotExist:
+                        return HttpResponse(status=404)
+                else:
+                    return HttpResponse(status=400)
+            except json.JSONDecodeError:
+                return HttpResponse(status=400)
+        return HttpResponse(status=400)
+    
+
+
+
+
+             
     @action(detail=False, methods=['get'])
     def cancelled_orders(self , request):
         user = self.request.user
@@ -171,7 +297,9 @@ class OrderViewSet(ModelViewSet):
         completed_orders = Order.objects.filter(user=user, is_cancelled=True)
         serializer = OrderSerializer(completed_orders, many=True)
         return Response(serializer.data)
-
+def verify_paystack_signature(payload, signature, secret_key):
+    paystack_signature = hmac.new(secret_key.encode('utf8'), msg=payload, digestmod=hashlib.sha256).hexdigest()
+    return paystack_signature == signature
 
 
 class UserProfileviewSet(ModelViewSet):

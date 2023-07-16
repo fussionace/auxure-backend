@@ -165,3 +165,6 @@ DJOSER = {
         "user_create": "api.serializers.MyUserCreateSerializer"
     }
 }
+
+PAYSTACK_PUBLIC_KEY = 'pk_test_0617c577edc22941344e9d74df86cca20775c57c'
+PAYSTACK_SECRET_KEY = 'sk_test_6e814404a73853b436f912364e0685f0c3696414'

@@ -152,36 +152,19 @@ class CartSerializer(serializers.ModelSerializer):
     
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    #product = PerfumeSerializer()
 
     class Meta:
         model = OrderItem
-        fields = ['id','product','price','quantity','sub_total']
+        fields = ['id','product','price','quantity']
 
 class OrderSerializer(serializers.ModelSerializer):
-    items = OrderItemSerializer(many=True, read_only=True)
+    items = OrderItemSerializer(many=True)
     class Meta:
         model = Order
-        fields = ['id','user','first_name','last_name','email','country','city','state','additional_info','address','zipcode','order_number','phone','created_at','total_amount','is_completed','is_cancelled','status','items',]
-        read_only_fields = ['order_number','total_amount','status','user','is_completed','is_cancelled']
+        fields = ['id','first_name','last_name','email','country','city','state','additional_info','address','zipcode','order_number','phone','created_at','total_amount','is_completed','is_cancelled','status','items']
+        read_only_fields = ['order_number','status','user','is_completed','is_cancelled']
 
-
-    def create(self, validated_data):
-        user = self.context['request'].user
-        cart = Cart.objects.get(user=user)
-        order = Order.objects.create(user=user, **validated_data)
-        order.save()
-        cart_items = cart.items.all()
-        for cart_item in cart_items:
-            ordered_quantiy = cart_item.quantity
-            if ordered_quantiy > 0 :
-                product = cart_item.perfume
-                product_price = product.price
-                OrderItem.objects.create(order=order, product=product,quantity=ordered_quantiy,price=product_price, sub_total=product_price*ordered_quantiy )
-                cart_item.quantity -= ordered_quantiy
-                cart_item.save()
-        order.total_amount = sum(item.subtotal for item in order.items.all())
-        order.save()
-        return order
 
 
 # userProfile serialization
