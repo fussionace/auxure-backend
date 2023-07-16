@@ -46,19 +46,6 @@ from rest_framework.exceptions import PermissionDenied
 
 from rest_framework_simplejwt.tokens import RefreshToken
 # Create your views here.
-# Initial view function, but did not allow the display of recommended products
-# class PerfumesViewSet(ModelViewSet):
-#     queryset = Perfume.objects.all()
-#     serializer_class = PerfumeSerializer
-#      Implementing filter and search
-#     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-#     filterset_class = PerfumeFilter
-#     search_fields = ['name', 'description']
-#     ordering_fields = ['price']     You can order by any other field or add other fields
-#      Implementing Pagination
-#     pagination_class = PageNumberPagination
-
-
 
 # The modified view function to also fetch similar perfumes and display on the perfume detail page
 class PerfumesViewSet(ModelViewSet):
@@ -111,13 +98,33 @@ class ReviewViewSet(ModelViewSet):
     def get_serializer_context(self):
         return {"perfume_id": self.kwargs["perfume_pk"]} # parsing product_id context to the serializers.py file
 
+# Offed the cartviewset for the one below it to handle checkout process
+# class CartViewSet(CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, GenericViewSet):
+#     # Inheriting from the modelviewset will be too heavy (covers 4 operations), the ListViewSet
+#     # would've allowed users to view other people's cart which is not a good practice, for that we 
+#     # only make use of 3 operations, hence the need to use the mixins in the generic viewset
+#     queryset = Cart.objects.all()
+#     serializer_class = CartSerializer
+
 
 class CartViewSet(CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, GenericViewSet):
-    # Inheriting from the modelviewset will be too heavy (covers 4 operations), the ListViewSet
-    # would've allowed users to view other people's cart which is not a good practice, for that we 
-    # only make use of 3 operations, hence the need to use the mixins in the generic viewset
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        if 'checkout' in serializer.validated_data:
+            # If the request contains 'checkout' data, process the checkout
+            checkout_serializer = CheckoutSerializer(data=serializer.validated_data['checkout'])
+            checkout_serializer.is_valid(raise_exception=True)
+            response = checkout_serializer.save()
+            return Response(response, status=status.HTTP_200_OK)
+        
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 

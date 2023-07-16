@@ -1,24 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from store.models import Perfume, PerfumeImage, Category, Review, Cart, Cartitems
-from order.models import Order, OrderItem
 
-# userProfile models
-from userprofile.models import UserProfile
-
-# Djoser authentication imports
-from djoser.serializers import UserCreateSerializer
-
-# djoser user serializer
-class MyUserCreateSerializer(UserCreateSerializer):
-    class Meta(UserCreateSerializer.Meta):
-        fields = ['id', 'username', 'password', 'email', "first_name", "last_name"]
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta(object):
-        model = User 
-        fields = ['id', 'username', 'password', 'email']
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -136,80 +119,16 @@ class UpdateCartItemSerializer(serializers.ModelSerializer):
         fields = ['quantity']
 
 
-# Created the checkout serializer
-class CheckoutSerializer(serializers.Serializer):
-    cart_id = serializers.UUIDField()
-    # Add any additional fields required for the checkout process
-
-    def validate_cart_id(self, value):
-        if not Cart.objects.filter(pk=value).exists():
-            raise serializers.ValidationError("The given cart id does not exist")
-        return value
-
-    def save(self):
-        cart_id = self.validated_data['cart_id']
-        # Perform the necessary actions for checkout, such as creating an order, processing payment, etc.
-        # You can access the cart using Cart.objects.get(pk=cart_id)
-        # Implement the checkout logic according to your specific requirements
-        # Return any relevant data or success message
-        return "Checkout successful"
-
-
 class CartSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(read_only=True)
     # id should be read only since its generated from within
     items = CartItemSerializer(many=True, read_only=True)
     grand_total = serializers.SerializerMethodField(method_name="cart_total")
-    checkout = CheckoutSerializer(write_only=True) # Nested serializer for checkout
     class Meta:
         model = Cart
-        fields = ['id', 'items', 'grand_total', 'checkout'] # Added the checkout field
+        fields = ['id', 'items', 'grand_total']
 
     def cart_total(self, cart:Cart):
         items = cart.items.all()
         total = sum([item.quantity * item.perfume.price for item in items])
         return total
-
-    
-
-class OrderItemSerializer(serializers.ModelSerializer):
-    #product = PerfumeSerializer()
-
-    class Meta:
-        model = OrderItem
-        fields = ['id','product','price','quantity']
-
-class OrderSerializer(serializers.ModelSerializer):
-    items = OrderItemSerializer(many=True)
-    class Meta:
-        model = Order
-        fields = ['id','first_name','last_name','email','country','city','state','additional_info','address','zipcode','order_number','phone','created_at','total_amount','is_completed','is_cancelled','status','items']
-        read_only_fields = ['order_number','status','user','is_completed','is_cancelled']
-
-
-
-# userProfile serialization
-
-class CreateUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        # fields = ['username', 'password']
-        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'password']
-        extra_kwargs = {'password': {'write_only': True}}
-    
-    # def create(self, validated_data):
-    #     user = User(username=validated_data['username'])
-    #     user.set_password(validated_data['password'])
-    #     user.save()
-    #     return user
-
-
-class UserProfileSerializer(serializers.ModelSerializer):
-    user = UserProfile
-    
-    class Meta:
-        model = UserProfile
-        fields = '__all__'
-
-
-

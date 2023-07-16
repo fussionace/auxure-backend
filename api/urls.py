@@ -52,3 +52,13 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
 
 ]
+
+
+
+
+# Url patterns for the cart and checkout
+# /carts/ - List and create carts
+# /carts/{cart_pk}/ - Retrieve and delete a specific cart
+# /carts/{cart_pk}/items/ - List and create cart items for a specific cart
+# /carts/{cart_pk}/items/{item_pk}/ - Retrieve, update, and delete a specific cart item
+# /carts/{cart_pk}/checkout/ - Process the checkout for a specific cart (added functionality)
