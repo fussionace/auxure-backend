@@ -174,18 +174,36 @@ class CartSerializer(serializers.ModelSerializer):
 
 class OrderItemSerializer(serializers.ModelSerializer):
     #product = PerfumeSerializer()
+    price = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
 
     class Meta:
         model = OrderItem
-        fields = ['id','product','price','quantity']
+        fields = ['product','quantity','price']
+    
+    
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
     class Meta:
         model = Order
-        fields = ['id','first_name','last_name','email','country','city','state','additional_info','address','zipcode','order_number','phone','created_at','total_amount','is_completed','is_cancelled','status','items']
-        read_only_fields = ['order_number','status','user','is_completed','is_cancelled']
+        fields = ['id','user','first_name','last_name','email','country','city','state','additional_info','address','zipcode','phone','total_amount','items','order_number']
+        read_only_fields = ['status','user','is_completed','is_cancelled']
 
+
+    def create(self, validated_data):
+        items_data = validated_data.pop('items')
+        request = self.context.get('request')
+        order = Order.objects.create(user=request.user, **validated_data)
+        order.order_number = order.generate_order_number()
+        order.save()
+        
+        for item_data in items_data:
+            product_id = item_data.pop('product')
+            product = Perfume.objects.get(pk=product_id.id)
+            quantity = item_data['quantity']
+            price = product.price * quantity
+            OrderItem.objects.create(order=order,product=product,quantity=quantity,price=price)
+        return order
 
 
 # userProfile serialization

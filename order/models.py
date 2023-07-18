@@ -34,11 +34,11 @@ class Order(models.Model):
     phone = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    order_number = models.CharField(max_length=20, unique=True)
+    order_number = models.CharField(max_length=25, null=True, unique=True)
     total_amount = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     #payment_mode = models.CharField(max_length=250)
     reference = models.CharField(max_length=50)
-    payment_gateway_token = models.CharField(max_length=250)
+    #payment_gateway_token = models.CharField(max_length=250)
     is_completed = models.BooleanField(default=False)
     is_cancelled = models.BooleanField(default=False)
     status = models.CharField(max_length=20, choices=STATUS_CHOICHES, default=PENDING)
@@ -52,8 +52,9 @@ class Order(models.Model):
     def generate_order_number(self):
         random_chars = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
         timestamps = int(time.time() * 1000)
-        self.order_number = f"AUX-{random_chars}-{timestamps}"
-        self.save()
+        return f"AUX-{random_chars}-{timestamps}"
+        #order_number = f"AUX-{random_chars}-{timestamps}"
+        #self.save()
 
 
 class OrderItem(models.Model):

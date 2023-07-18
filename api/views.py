@@ -206,7 +206,7 @@ class OrderViewSet(ModelViewSet):
                 "email": validated_data['email'],
                 "amount": int(validated_data['total_amount']*100),
                 "reference" : str(reference),
-                "callback_url": "http://127.0.0.1:8000/api/paystack-callback/"
+                "callback_url": 'https://http://127.0.0.1:8000/paystack/callback'
             }
 
             headers = {
@@ -214,80 +214,31 @@ class OrderViewSet(ModelViewSet):
                 "Content-Type": "application/json"
             }
 
-            response = request.post(paystack_url, json=order_data, headers=headers)
-            if response.status_code == 200:
-                order_details = response.json()
-                access_code = order_details['data']['access_code']
-
-                order = Order.objects.create(user=request.user,reference=reference,**validated_data)
-
-                for item in validated_data['items']:
-                    product = Perfume.objects.get(id=item['product']['id'])
-                    OrderItem.objects.create(
-                        order = order,
-                        product = product,
-                        quantity = item['quantity'],
-                        price = item['price']
-                    )
-                paystack_payment_url = f"https://paystack.com/pay{access_code}"
-                return Response (
-                    {
-                        "id":order.id,
-                        "reference": order.reference,
-                        "redirect_url": paystack_payment_url,
-                        **validated_data
-                    },
-                    status=status.HTTP_200_OK
-                )
-            else:
-                return Response(
-                    {"error":"failed to create order."},
-                    status=response.status_code
-                )
-        else:
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+            response = requests.post(paystack_url, json=order_data, headers=headers)
+            data = response.json()
+            Order = serializer.save(reference=reference)
+            return Response({'payment_url': data['data']['authorization_url']})
+       
+   
     @csrf_exempt
-    def paystack_verify_callback(request):
-        if request.method == 'POST':
-            payload = request.body
-            signature = request.headers.get('X-Paystack-Signature')
-            paystack_secret_key = settings.PAYSTACK_SECRET_KEY
+    def dispatch(self, request, *args, **kwargs):
+       return super().dispatch(request, *args, **kwargs)
 
-            is_valid_signature = verify_paystack_signature(payload, signature, paystack_secret_key)
-
-            if not is_valid_signature:
-                return HttpResponse(status=400)
-
-            try:
-                data = json.loads(payload)
-                event = data.get('event')
-                reference = data.get('data').get('reference')
-                status = data.get('data').get('status')
-
-                if event == 'charge.success' and status == 'success':
-                    try:
-                        order = Order.objects.get(reference=reference)
-                        order.is_completed = True
-                        order.save()
-                        return HttpResponse(status=200)
-                    except Order.DoesNotExist:
-                        return HttpResponse(status=404)
-                elif event == 'charge.failure' and status == 'failed':
-                    try:
-                        order = Order.objects.get(reference=reference)
-                        order.is_cancelled = True
-                        order.save()
-                        return HttpResponse(status=200)
-                    except Order.DoesNotExist:
-                        return HttpResponse(status=404)
-                else:
-                    return HttpResponse(status=400)
-            except json.JSONDecodeError:
-                return HttpResponse(status=400)
-        return HttpResponse(status=400)
-    
-
-
+    @action (detail=False, methods=['post'], url_path='paystack-callback')
+    def paystack_callback(self, request):
+        callback_data = json.loads(request.body)
+        reference = callback_data['data']['reference']
+        paystack_secret_key = settings.PAYSTACK_SECRET_KEY
+        headers = {
+                "Authorization" : f"Bearer {paystack_secret_key}",
+            }
+        verify_response = requests.get(f'https://api.paystack.co/transaction/verify/{reference}', headers=headers)
+        verification_data =verify_response.json()
+        if verification_data['data']['status']== 'success':
+            order = Order.objects.get(reference=reference)
+            order.is_completed = True
+            order.save()
+            return HttpResponse(status=200)
 
 
              
@@ -301,7 +252,7 @@ class OrderViewSet(ModelViewSet):
     @action(detail=False, methods=['get'])
     def completed_orders(self , request):
         user = self.request.user
-        completed_orders = Order.objects.filter(user=user, is_cancelled=True)
+        completed_orders = Order.objects.filter(user=user, is_completed=True)
         serializer = OrderSerializer(completed_orders, many=True)
         return Response(serializer.data)
 def verify_paystack_signature(payload, signature, secret_key):
