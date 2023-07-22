@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 import dj_database_url
 import os
 
@@ -26,6 +27,7 @@ SECRET_KEY = 'django-insecure-9do86p0gu0(-3842o!s#+8+lf!++hl4^4!9_g1=ucug31unf7h
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+# DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -40,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    
     'django_filters',
     'userprofile',
     'store',
@@ -47,6 +50,7 @@ INSTALLED_APPS = [
     'api',
     'rest_framework.authtoken',
     'djoser',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -83,17 +87,17 @@ WSGI_APPLICATION = 'auxure.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-
 DATABASES = {
-    'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
+
+
+# DATABASES = {
+#     'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
+# }
 
 
 # Password validation
@@ -147,10 +151,11 @@ REST_FRAMEWORK = {
    'DEFAULT_PERMISSION_CLASSES': [
    'rest_framework.permissions.AllowAny',
    ],
-    'PAGE_SIZE': 3,
+   'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 5,
 }
 
-from datetime import timedelta
+
 
 # Configure token expiration time (optional)
 SIMPLE_JWT = {
