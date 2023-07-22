@@ -48,8 +48,9 @@ class PerfumesViewSet(ModelViewSet):
     filterset_class = PerfumeFilter
     search_fields = ['name', 'description']
     ordering_fields = ['price']     #You can order by any other field or add other fields
-    # Implementing Pagination
-    pagination_class = PageNumberPagination
+    # Implementing Pagination - Not necessary except to overide the setting in the restframework dictionary
+    # pagination_class = PageNumberPagination
+    # page_size = 3
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
