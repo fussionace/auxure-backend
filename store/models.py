@@ -28,6 +28,9 @@ class Category(models.Model):
     icon = models.CharField(max_length=100, default=None, blank=True, null=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, default='B')
 
+    class Meta:
+        ordering = ['title']
+
     def __str__(self):
         return self.title
 
@@ -45,6 +48,9 @@ class Perfume(models.Model):
     inventory = models.IntegerField(default=5)
     top_deal=models.BooleanField(default=False)
     flash_sales = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['price']  # Default pagination field for perfumes
     
     def __str__(self):
         return self.name
