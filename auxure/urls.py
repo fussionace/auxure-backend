@@ -44,18 +44,16 @@ schema_view = swagger_get_schema_view(
 urlpatterns = [
     path('admin/', admin.site.urls),
     # path('', include('store.urls')),
+    
     # API root and documentation
-    path('api/v1/', include([path("root/", include("api.urls")),
-                             path('', schema_view.with_ui('swagger', cache_timeout=0), name="swagger_schema"),])),
-                            
 
-    path("api/", include("api.urls")),
-
-    # path('swagger/schema', schema_view.with_ui('swagger', cache_timeout=0), name="swagger_schema"),
-
+    path('api/v1/', include([path("", include("api.urls")),
+                             path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name="swagger_schema"),])),
+ 
     # Djoser and simplejwt urls
 
     path('auth/', include('djoser.urls')),
+    path('auth/', include('djoser.social.urls')),
     path('auth/', include('djoser.urls.jwt')),
 
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
