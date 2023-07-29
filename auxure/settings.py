@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'api',
     'rest_framework.authtoken',
     'djoser',
+    'social_django',
     'drf_yasg',
 ]
 
@@ -87,17 +88,17 @@ WSGI_APPLICATION = 'auxure.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-
 # DATABASES = {
-#     'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
 # }
+
+
+DATABASES = {
+    'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
+}
 
 
 # Password validation
@@ -176,3 +177,22 @@ DJOSER = {
         "user_create": "api.serializers.MyUserCreateSerializer"
     }
 }
+
+
+# AUTHENTICATION_BACKENDS = (
+#     'social_core.backends.facebook.FacebookOAuth2',
+#     'social_core.backends.google.GoogleOAuth2',
+#     'djoser.social.backends.facebook.FacebookOAuth2Override',
+#     'djoser.social.backends.google.GoogleOAuth2Override',
+#     'djoser.social.backends.twitter.TwitterOAuth1Override',
+#     'djoser.social.backends.github.GithubOAuth2Override',
+#     'django.contrib.auth.backends.ModelBackend',  
+# )
+
+
+# SOCIAL AUTHENTICATION API KEYS
+SOCIAL_AUTH_FACEBOOK_KEY = 'The_facebook_app_id'
+SOCIAL_AUTH_FACEBOOK_SECRET = 'The_facebook_app_secret'
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = 'The_google_client_id'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'The_google_client_secret'
