@@ -173,35 +173,36 @@ class CartSerializer(serializers.ModelSerializer):
     
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    #product = PerfumeSerializer()
+    price = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
 
     class Meta:
         model = OrderItem
-        fields = ['id','product','price','quantity','sub_total']
+        fields = ['product','quantity','price']
+    
+    
 
 class OrderSerializer(serializers.ModelSerializer):
-    items = OrderItemSerializer(many=True, read_only=True)
+    items = OrderItemSerializer(many=True)
     class Meta:
         model = Order
-        fields = ['id','user','first_name','last_name','email','country','city','state','additional_info','address','zipcode','order_number','phone','created_at','total_amount','is_completed','is_cancelled','status','items',]
-        read_only_fields = ['order_number','total_amount','status','user','is_completed','is_cancelled']
+        fields = ['id','user','first_name','last_name','email','country','city','state','additional_info','address','zipcode','phone','total_amount','items','order_number']
+        read_only_fields = ['status','user','is_completed','is_cancelled']
 
 
     def create(self, validated_data):
-        user = self.context['request'].user
-        cart = Cart.objects.get(user=user)
-        order = Order.objects.create(user=user, **validated_data)
+        items_data = validated_data.pop('items')
+        request = self.context.get('request')
+        order = Order.objects.create(user=request.user, **validated_data)
+        order.order_number = order.generate_order_number()
         order.save()
-        cart_items = cart.items.all()
-        for cart_item in cart_items:
-            ordered_quantiy = cart_item.quantity
-            if ordered_quantiy > 0 :
-                product = cart_item.perfume
-                product_price = product.price
-                OrderItem.objects.create(order=order, product=product,quantity=ordered_quantiy,price=product_price, sub_total=product_price*ordered_quantiy )
-                cart_item.quantity -= ordered_quantiy
-                cart_item.save()
-        order.total_amount = sum(item.subtotal for item in order.items.all())
-        order.save()
+        
+        for item_data in items_data:
+            product_id = item_data.pop('product')
+            product = Perfume.objects.get(pk=product_id.id)
+            quantity = item_data['quantity']
+            price = product.price * quantity
+            OrderItem.objects.create(order=order,product=product,quantity=quantity,price=price)
         return order
 
 

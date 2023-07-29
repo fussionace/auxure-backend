@@ -26,8 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-9do86p0gu0(-3842o!s#+8+lf!++hl4^4!9_g1=ucug31unf7h'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-# DEBUG = False
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -56,6 +55,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -136,7 +136,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
-
+STATIC_ROOT = BASE_DIR / 'static'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -179,6 +184,10 @@ DJOSER = {
 }
 
 
+PAYSTACK_PUBLIC_KEY = 'pk_test_0617c577edc22941344e9d74df86cca20775c57c'
+PAYSTACK_SECRET_KEY = 'sk_test_6e814404a73853b436f912364e0685f0c3696414'
+
+
 # AUTHENTICATION_BACKENDS = (
 #     'social_core.backends.facebook.FacebookOAuth2',
 #     'social_core.backends.google.GoogleOAuth2',
@@ -196,3 +205,4 @@ SOCIAL_AUTH_FACEBOOK_SECRET = 'The_facebook_app_secret'
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = 'The_google_client_id'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'The_google_client_secret'
+

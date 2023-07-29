@@ -46,9 +46,10 @@ urlpatterns = [
     # path('', include('store.urls')),
     
     # API root and documentation
+
     path('api/v1/', include([path("", include("api.urls")),
                              path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name="swagger_schema"),])),
-   
+ 
     # Djoser and simplejwt urls
 
     path('auth/', include('djoser.urls')),

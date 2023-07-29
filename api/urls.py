@@ -16,7 +16,7 @@ router = routers.DefaultRouter()
 # Parent router for the other endpoints
 router.register("perfumes", views.PerfumesViewSet)
 router.register("categories", views.CategoriesViewSet)
-router.register("carts", views.CartViewSet)
+#router.register("carts", views.CartViewSet)
 router.register(r'orders', views.OrderViewSet)
 
 
@@ -33,8 +33,8 @@ perfume_router = routers.NestedDefaultRouter(router, "perfumes", lookup="perfume
 perfume_router.register("reviews", views.ReviewViewSet, basename="perfume-reviews")
 
 # cart child router
-cart_router = routers.NestedDefaultRouter(router, "carts", lookup="cart")
-cart_router.register("items", views.CartItemViewSet, basename="cart-items")
+#cart_router = routers.NestedDefaultRouter(router, "carts", lookup="cart")
+#cart_router.register("items", views.CartItemViewSet, basename="cart-items")
 
 users_router = routers.NestedDefaultRouter(router, "users", lookup="users")
 # register_router = routers.NestedDefaultRouter(router, "registers", lookup="registers")
@@ -46,7 +46,7 @@ users_router = routers.NestedDefaultRouter(router, "users", lookup="users")
 urlpatterns = [
     path("", include(router.urls)),
     path("", include(perfume_router.urls)),
-    path("", include(cart_router.urls)),
+    #path("", include(cart_router.urls)),
     path("", include(users_router.urls)),
     path('signup/', CreateUser.as_view(), name='create-user'),
     path('login/', LoginView.as_view(), name='login'),
