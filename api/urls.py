@@ -5,9 +5,6 @@ from rest_framework.routers import DefaultRouter
 # Import for nested routers
 from rest_framework_nested import routers
 
-#Userpofile
-# from .views import UserProfileviewSet, UserViewSet
-
 # Url endpoints for modelviewsets
 
 # Parent routers

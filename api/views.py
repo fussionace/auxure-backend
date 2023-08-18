@@ -31,7 +31,7 @@ from rest_framework.pagination import PageNumberPagination
 
 #userProfile 
 from userprofile.models import UserProfile
-from .serializers import UserProfileSerializer, UserSerializer, CreateUserSerializer
+from .serializers import UserProfileSerializer, UserSerializer
 # from rest_framework import viewsets, permissions
 from django.contrib.auth.models import User
 from rest_framework.views import APIView
