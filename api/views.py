@@ -8,7 +8,7 @@ from django.conf import settings
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
-from .serializers import PerfumeSerializer, CategorySerializer, ReviewSerializer, CartSerializer, CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer,OrderSerializer
+from .serializers import PerfumeSerializer, CategorySerializer, ReviewSerializer, CartSerializer, CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer, OrderSerializer, CheckoutSerializer
 from store.models import Category, Perfume, Review, Cart, Cartitems
 from order.models import Order, OrderItem
 from rest_framework.response import Response
@@ -31,11 +31,14 @@ from rest_framework.pagination import PageNumberPagination
 
 #userProfile 
 from userprofile.models import UserProfile
-from .serializers import UserProfileSerializer, CreateUserSerializer
+from .serializers import UserProfileSerializer, UserSerializer, CreateUserSerializer
 # from rest_framework import viewsets, permissions
 from django.contrib.auth.models import User
 from rest_framework.views import APIView
 from django.db import IntegrityError
+
+from django.contrib.auth import login
+from rest_framework.permissions import IsAuthenticated
 
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import permission_classes
@@ -69,7 +72,7 @@ class PerfumesViewSet(ModelViewSet):
         similar_perfumes = Perfume.objects.filter(
             category__title=instance.category.title,
             category__gender=instance.category.gender,
-            price__lte=instance.price + 50,   #Define your price range here
+            price__lte=instance.price + 50,   #Defining the price range
             price__gte=instance.price - 50
         ).exclude(id=instance.id)
 
@@ -99,15 +102,8 @@ class ReviewViewSet(ModelViewSet):
     def get_serializer_context(self):
         return {"perfume_id": self.kwargs["perfume_pk"]} # parsing product_id context to the serializers.py file
 
-# Offed the cartviewset for the one below it to handle checkout process
-# class CartViewSet(CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, GenericViewSet):
-#     # Inheriting from the modelviewset will be too heavy (covers 4 operations), the ListViewSet
-#     # would've allowed users to view other people's cart which is not a good practice, for that we 
-#     # only make use of 3 operations, hence the need to use the mixins in the generic viewset
-#     queryset = Cart.objects.all()
-#     serializer_class = CartSerializer
 
-
+# Activated if the backend is to handle the cart logic
 class CartViewSet(CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, GenericViewSet):
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
@@ -126,6 +122,20 @@ class CartViewSet(CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, Gener
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+
+# Activated if the frontend is to handle the cart logic
+# class CartViewSet(ModelViewSet):
+#     permission_classes = [permissions.IsAuthenticated]
+#     serializer_class = OrderSerializer
+
+#     def create(self, request, *args, **kwargs):
+#         paystack_secret_key = settings.PAYSTACK_SECRET_KEY
+#         paystack.initialize(paystack_secret_key)
+
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         self.perform_create(serializer)
 
 
 
@@ -146,18 +156,6 @@ class CartItemViewSet(ModelViewSet):
     
     def get_serializer_context(self):
         return {"cart_id": self.kwargs["cart_pk"]}
-    
-class CartViewSet(ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = OrderSerializer
-
-    def create(self, request, *args, **kwargs):
-        paystack_secret_key = settings.PAYSTACK_SECRET_KEY
-        paystack.initialize(paystack_secret_key)
-
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
 
 
    
@@ -325,45 +323,74 @@ class UserProfileviewSet(ModelViewSet):
 #     serializer_class = CreateUserSerializer
 
 
-class CreateUser(APIView):
+# class CreateUser(APIView):
 
-    def post(self, request):
-        try:
-            username = request.data.get('username')
-            first_name = request.data.get('first_name')
-            last_name = request.data.get('last_name')
-            email = request.data.get('email')
-            password = request.data.get('password')
+#     def post(self, request):
+#         try:
+#             username = request.data.get('username')
+#             first_name = request.data.get('first_name')
+#             last_name = request.data.get('last_name')
+#             email = request.data.get('email')
+#             password = request.data.get('password')
 
-            user = User.objects.create_user(username=username, first_name=first_name, last_name=last_name, email=email, password=password)
+#             user = User.objects.create_user(username=username, first_name=first_name, last_name=last_name, email=email, password=password)
 
-            user_profile = UserProfile.objects.create(user=user)
-            serializer = UserProfileSerializer(user_profile)
+#             user_profile = UserProfile.objects.create(user=user)
+#             serializer = UserProfileSerializer(user_profile)
             
-            return Response(serializer.data)
-        except IntegrityError:
-            return Response({'error': 'Username already exists'})
+#             return Response(serializer.data)
+#         except IntegrityError:
+#             return Response({'error': 'Username already exists'})
         
 
-class LoginView(APIView):
-    permission_classes = [AllowAny]
+# class LoginView(APIView):
+#     permission_classes = [AllowAny]
 
-    def post(self, request):
+#     def post(self, request):
+#         username = request.data.get('username')
+#         password = request.data.get('password')
+
+#         user = authenticate(username=username, password=password)
+
+#         # if user:
+#         #     token, _ = Token.objects.get_or_create(user=user)
+#         #     return Response({'token': token.key})
+#         # else:
+#         #     return Response({'error': 'Invalid credentials'}, status=400)
+        
+#         if user:
+#             refresh = RefreshToken.for_user(user)
+#             access_token = str(refresh.access_token)
+
+#             return Response({'access_token': access_token})
+#         else:
+#             return Response({'error': 'Invalid credentials'}, status=400)
+
+class UserProfileViewSet(ModelViewSet):
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
+
+
+class UserViewSet(ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    @action(detail=False, methods=['post'])
+    def register(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
-
-        user = authenticate(username=username, password=password)
-
-        # if user:
-        #     token, _ = Token.objects.get_or_create(user=user)
-        #     return Response({'token': token.key})
-        # else:
-        #     return Response({'error': 'Invalid credentials'}, status=400)
         
-        if user:
-            refresh = RefreshToken.for_user(user)
-            access_token = str(refresh.access_token)
+        if not username or not password:
+            return Response({"error": "Username and password are required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if User.objects.filter(username=username).exists():
+            return Response({"error": "Username is already taken."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = User.objects.create_user(username=username, password=password)
+        login(request, user)
+        return Response({"message": "User registered successfully."}, status=status.HTTP_201_CREATED)
 
-            return Response({'access_token': access_token})
-        else:
-            return Response({'error': 'Invalid credentials'}, status=400)
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def logout(self, request):
+        request.auth.delete()
+        return Response({"message": "User logged out successfully."}, status=status.HTTP_200_OK)

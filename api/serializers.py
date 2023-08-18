@@ -223,11 +223,18 @@ class CreateUserSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    user = UserProfile
-    
     class Meta:
         model = UserProfile
-        fields = '__all__'
+        fields = ['id', 'user', 'email', 'phone_number', 'shipping_address', 'billing_address', 'profile_picture']
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'password']  # Include other fields as needed
+        extra_kwargs = {'password': {'write_only': True}}  # To hide password when serialized
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        return user
 
