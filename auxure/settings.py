@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    
     'django_filters',
     'userprofile',
     'store',
@@ -87,17 +86,17 @@ WSGI_APPLICATION = 'auxure.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-
 # DATABASES = {
-#     'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
 # }
+
+
+DATABASES = {
+    'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
+}
 
 
 # Password validation
@@ -149,7 +148,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-    'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 5,
@@ -168,7 +167,7 @@ SIMPLE_JWT = {
     # Activate this when you want to use bearer tokens in postman
     "AUTH_HEADER_TYPES": ("Bearer",),
 
-    # Activate this when you want to work on the browser
+    # Activate this when you want to work on the browser ModHeader extension
     # "AUTH_HEADER_TYPES": ("JWT",),
 }
 
