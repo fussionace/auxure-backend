@@ -44,7 +44,7 @@ class Perfume(models.Model):
     price = models.FloatField(default=100.00)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, blank=True, null=True, related_name='products')
     slug = models.SlugField(default=None, blank=True, null=True)
-    #id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, unique=True)
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, unique=True)
     inventory = models.IntegerField(default=5)
     top_deal=models.BooleanField(default=False)
     flash_sales = models.BooleanField(default=False)

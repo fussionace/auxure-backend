@@ -44,14 +44,31 @@ def test_can_get_perfumes():
 
 
 
-# CATEGORY ENDPOINTS TESTS
-# GET CATEGORIES
-def test_can_get_category():
+# TESTS FOR THE CATEGORY ENDPOINTS 
+
+# TEST GET REQUEST FOR CATEGORIES
+def test_can_get_categories():
     response = requests.get(ENDPOINT + "categories/")
     assert response.status_code == 200  
 
+# TEST GET REQUEST FOR CATEGORY
+def test_can_get_category():
+    # Create a category
+    payload = category_payload()
+    
+    create_category_response = create_category(payload)
+    assert create_category_response.status_code == 201  
 
-# POST CATEGORIES
+    data = create_category_response.json()
+    # Retrieve the category
+    category_id = data['category_id']
+    print(category_id)
+    get_category_response = get_category(category_id)
+
+    assert get_category_response.status_code == 200
+
+
+# TEST POST REQUEST FOR CATEGORIES
 def test_can_create_category():
 
     payload = category_payload()
@@ -71,6 +88,7 @@ def test_can_create_category():
     # print(get_category_data['category_id'])
 
 
+# TEST PUT REQUEST FOR CATEGORIES
 def test_can_update_category():
     payload = category_payload()
     # Creates the category
@@ -97,6 +115,7 @@ def test_can_update_category():
     assert get_category_data['gender'] == new_payload['gender'] 
 
 
+# TEST DELETE REQUEST FOR CATEGORIES
 def test_can_delete_category():
     payload = category_payload()
     # Create a category
@@ -112,4 +131,10 @@ def test_can_delete_category():
     # Check if the category was deleted
     get_category_response = get_category(category_id)
     assert get_category_response.status_code == 404
+
+
+# TESTS FOR THE CART ENDPOINTS
+# def test_can_get_cart():
+#     response = requests.get(ENDPOINT + "cart/")
+#     assert response.status_code == 200 
 
