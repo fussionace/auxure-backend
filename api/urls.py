@@ -19,10 +19,8 @@ router.register(r'orders', views.OrderViewSet)
 
 
 # user profile route
-# router.register("users", UserProfileviewSet)
-router.register(r'profile', views.UserProfileViewSet)
+router.register(r'profiles', views.UserProfileViewSet)
 router.register(r'users', views.UserViewSet)
-# router.register("registers", RegisterUserViewSet)
 
 
 # Creating the router to be able to view the particular review for a particular product
@@ -47,8 +45,6 @@ urlpatterns = [
     path("", include(perfume_router.urls)),
     # path("", include(cart_router.urls)),
     path("", include(users_router.urls)),
-    # path('signup/', CreateUser.as_view(), name='create-user'),
-    # path('login/', LoginView.as_view(), name='login'),
 
 ]
 
