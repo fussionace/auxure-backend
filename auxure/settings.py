@@ -41,6 +41,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # APPS FOR SOCIAL LOGIN
+    # /// Not in use
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'rest_framework_social_oauth2',
+    # //// In use
+    'social_django',
+    # END OF SOCIAL LOGIN APPS
     'rest_framework',
     'django_filters',
     'userprofile',
@@ -86,17 +96,17 @@ WSGI_APPLICATION = 'auxure.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-
 DATABASES = {
-    'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
+
+
+# DATABASES = {
+#     'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
+# }
 
 
 # Password validation
@@ -176,3 +186,22 @@ DJOSER = {
         "user_create": "api.serializers.MyUserCreateSerializer"
     }
 }
+
+
+# CONFIGURATIONS FOR SOCIAL (GOOGLE) LOGIN
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',  # Google OAuth2 backend
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '883465917784-82atmsidsdqevjdtgvbmlj8bffi1gd1v.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+
+# Social Redirect URLs
+LOGIN_URL = 'login'
+LOGOUT_URL = 'logout'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+# END OF SOCIAL LOGIN CONFIGURATIONS

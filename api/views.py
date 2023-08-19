@@ -44,6 +44,13 @@ from rest_framework.permissions import AllowAny
 from django.contrib.auth import authenticate
 from rest_framework import permissions
 
+# Import for google login
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from social_django.utils import psa
+import jwt
+from datetime import datetime, timedelta
+
 # Create your views here.
 
 # The modified view function to also fetch similar perfumes and display on the perfume detail page
@@ -285,3 +292,43 @@ class UserViewSet(ModelViewSet):
     def logout(self, request):
         request.auth.delete()
         return Response({"message": "User logged out successfully."}, status=status.HTTP_200_OK)
+
+
+# API VIEW FOR GOOGLE LOGIN
+class GoogleLogin(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    @psa('social:complete')
+    def post(self, request, backend):
+        # This view will process the Google login flow
+        # The `user` object holds the user data
+        user = request.backend.do_auth(request.data['access_token'])
+    
+        if user:
+            # Generate JWT token
+            token_payload = {
+                'user_id': user.id,  # This can be adjusted based on the User model
+                'exp': datetime.utcnow() + timedelta(days=1)  # Token expiration time
+            }
+            token = jwt.encode(token_payload, settings.SECRET_KEY, algorithm='HS256')
+
+            # Return the JWT token in the response
+            return Response({'token': token})
+        else:
+            return Response({'error': 'Google authentication failed'}, status=400)
+
+
+    # @psa('social:complete')
+    # def post(self, request, backend):
+    #     # This view will process the Google login flow
+    #     # The `user` object holds the user data
+    #     user = request.backend.do_auth(request.data['access_token'])
+    #     if user:
+    #         # Generate JWT token and send response
+    #         # Yet to be implmented
+    #         return Response({'token': 'your-jwt-token'})
+    #     else:
+    #         return Response({'error': 'Google authentication failed'}, status=400)
+
+    
