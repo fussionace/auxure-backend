@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from api import views
 from django.urls import path, include, re_path
+# from allauth.account.views import ConfirmEmailView
 from django.conf import settings
 from django.conf.urls.static import static
 
