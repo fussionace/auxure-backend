@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.shortcuts import render
 from api import views
 from django.urls import path, include, re_path
 # from allauth.account.views import ConfirmEmailView
@@ -41,9 +42,12 @@ schema_view = swagger_get_schema_view(
     public=True,
 )
 
+def home(request):
+    return render(request, "home.html")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', home),
     # path('', include('store.urls')),
     
     # API root and documentation
@@ -56,6 +60,8 @@ urlpatterns = [
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.social.urls')),
     path('auth/', include('djoser.urls.jwt')),
+
+    path('accounts/', include('allauth.urls')),
 
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
