@@ -307,30 +307,3 @@ class UserViewSet(ModelViewSet):
         return Response({"message": "User logged out successfully."}, status=status.HTTP_200_OK)
 
 
-# API VIEW FOR GOOGLE LOGIN
-class GoogleLogin(APIView):
-    authentication_classes = []
-    permission_classes = []
-
-    @psa('social:complete')
-    def post(self, request, backend):
-        # This view will process the Google login flow
-        # The `user` object holds the user data
-        user = request.backend.do_auth(request.data['access_token'])
-    
-        if user:
-            # Generate JWT token
-            token_payload = {
-                'user_id': user.id,  # This can be adjusted based on the User model
-                'exp': datetime.utcnow() + timedelta(days=1)  # Token expiration time
-            }
-            token = jwt.encode(token_payload, settings.SECRET_KEY, algorithm='HS256')
-
-            # Return the JWT token in the response
-            return Response({'token': token})
-        else:
-            return Response({'error': 'Google authentication failed'}, status=400)
-
-
-
-    

@@ -23,8 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Environment variables
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
-GOOGLE_CLIENT_ID = config('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
-GOOGLE_SECRET = config('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
+
+GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = config('GOOGLE_CLIENT_SECRET')
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -37,6 +39,7 @@ GOOGLE_SECRET = config('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
 
 ALLOWED_HOSTS = ['*']
 
+SITE_ID = 1   # Site ID FOR django.contrib.site
 
 # Application definition
 
@@ -47,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     # APPS FOR SOCIAL LOGIN
     # /// Not in use
     'allauth',
@@ -83,7 +87,7 @@ ROOT_URLCONF = 'auxure.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR,'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -91,6 +95,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                # Allauth definition
+                'django.template.context_processors.request'
             ],
         },
     },
@@ -102,17 +108,17 @@ WSGI_APPLICATION = 'auxure.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-
 # DATABASES = {
-#     'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
 # }
+
+
+DATABASES = {
+    'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
+}
 
 
 # Password validation
@@ -189,8 +195,11 @@ SIMPLE_JWT = {
 
 DJOSER = {
     "SERIALIZER":{
-        "user_create": "api.serializers.MyUserCreateSerializer"
-    }
+        "user_create": "api.serializers.MyUserCreateSerializer", 
+        'user': 'djoser.serializers.UserSerializer',
+        'user_delete': 'djoser.serializers.UserDeleteSerializer',
+    },
+    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': ['http://127.0.0.1:8000/accounts/google/login/callback/'],
 }
 
 
@@ -199,7 +208,20 @@ DJOSER = {
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.google.GoogleOAuth2',  # Google OAuth2 backend
     'django.contrib.auth.backends.ModelBackend',
+
+    'allauth.account.auth_backends.AuthenticationBackend',
 )
+
+# SOCIAL ACCOUNT PROVIDERS
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': GOOGLE_CLIENT_ID,
+            'secret': GOOGLE_CLIENT_SECRET,
+            'key': '',
+        }
+    }
+}
 
 # SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '################################'
 # SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '################################################################'
@@ -207,6 +229,7 @@ AUTHENTICATION_BACKENDS = (
 # Social Redirect URLs
 LOGIN_URL = 'login'
 LOGOUT_URL = 'logout'
+# LOGIN_REDIRECT_URL = '/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
