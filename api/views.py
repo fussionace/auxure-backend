@@ -42,7 +42,9 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import AllowAny
 from django.contrib.auth import authenticate
-from rest_framework import permissions
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+# Importing custom permissions
+from . import permissions
 
 # Import for google login
 from rest_framework.views import APIView
@@ -57,6 +59,7 @@ from datetime import datetime, timedelta
 class PerfumesViewSet(ModelViewSet):
     queryset = Perfume.objects.all()
     serializer_class = PerfumeSerializer
+    permission_classes = [permissions.IsAdminOrReadOnly] # Inheriting custom permission
 
     # Implementing filter and search
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -91,12 +94,14 @@ class PerfumesViewSet(ModelViewSet):
 
 
 class CategoriesViewSet(ModelViewSet):
-    queryset = Category.objects.all()  #Fetches multiple
+    queryset = Category.objects.all()  
     serializer_class = CategorySerializer
+    permission_classes = [permissions.IsAdminOrReadOnly]
 
 
 class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
+    
 
     # Since we need just specific reviews, so we create a fxn for the queryset
     def get_queryset(self):
@@ -163,7 +168,7 @@ class CartItemViewSet(ModelViewSet):
 
    
 class OrderViewSet(ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated,]
+    permission_classes = [IsAuthenticated,]
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
@@ -263,9 +268,17 @@ def verify_paystack_signature(payload, signature, secret_key):
 
 
 # Viewset for updating user profiles
+
 class UserProfileViewSet(ModelViewSet):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
+    
+    def get_permissions(self):
+        if self.action == 'retrieve' or self.action == 'update':
+            return [IsAuthenticated(), permissions.IsProfileOwnerOrAdmin()]
+        elif self.action in ['list', 'create', 'update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsAdminUser()]
+        return super().get_permissions()
 
 
 # Viewset to handle signup, login and logout
@@ -273,7 +286,7 @@ class UserViewSet(ModelViewSet):
     queryset = User.objects.all().order_by('id')
     serializer_class = UserSerializer
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['POST'], permission_classes=[permissions.IsAdminOrReadOnly])
     def register(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
@@ -319,16 +332,5 @@ class GoogleLogin(APIView):
             return Response({'error': 'Google authentication failed'}, status=400)
 
 
-    # @psa('social:complete')
-    # def post(self, request, backend):
-    #     # This view will process the Google login flow
-    #     # The `user` object holds the user data
-    #     user = request.backend.do_auth(request.data['access_token'])
-    #     if user:
-    #         # Generate JWT token and send response
-    #         # Yet to be implmented
-    #         return Response({'token': 'your-jwt-token'})
-    #     else:
-    #         return Response({'error': 'Google authentication failed'}, status=400)
 
     
