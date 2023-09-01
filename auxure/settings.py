@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
+from decouple import config
 
 from pathlib import Path
 from datetime import timedelta
@@ -19,18 +20,24 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+# Environment variables
+SECRET_KEY = config('SECRET_KEY')
+DEBUG = config('DEBUG', default=False, cast=bool)
+GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = config('GOOGLE_CLIENT_SECRET')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-9do86p0gu0(-3842o!s#+8+lf!++hl4^4!9_g1=ucug31unf7h'
+# SECRET_KEY = '################################'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
 # DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
+SITE_ID = 1   # Site ID FOR django.contrib.site
 
 # Application definition
 
@@ -41,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     # APPS FOR SOCIAL LOGIN
     # /// Not in use
     'allauth',
@@ -58,8 +66,9 @@ INSTALLED_APPS = [
     'order',
     'api',
     'rest_framework.authtoken',
+    'rest_framework_swagger',
     'djoser',
-    'drf_yasg',
+    # 'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -77,7 +86,7 @@ ROOT_URLCONF = 'auxure.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR,'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -85,6 +94,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                # Allauth definition
+                'django.template.context_processors.request'
             ],
         },
     },
@@ -175,16 +186,19 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
     # Activate this when you want to use bearer tokens in postman
-    "AUTH_HEADER_TYPES": ("Bearer",),
+    # "AUTH_HEADER_TYPES": ("Bearer",),
 
     # Activate this when you want to work on the browser ModHeader extension
-    # "AUTH_HEADER_TYPES": ("JWT",),
+    "AUTH_HEADER_TYPES": ("JWT",),
 }
 
 DJOSER = {
     "SERIALIZER":{
-        "user_create": "api.serializers.MyUserCreateSerializer"
-    }
+        "user_create": "api.serializers.MyUserCreateSerializer", 
+        'user': 'djoser.serializers.UserSerializer',
+        'user_delete': 'djoser.serializers.UserDeleteSerializer',
+    },
+    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': ['http://127.0.0.1:8000/accounts/google/login/callback/'],
 }
 
 
@@ -193,14 +207,35 @@ DJOSER = {
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.google.GoogleOAuth2',  # Google OAuth2 backend
     'django.contrib.auth.backends.ModelBackend',
+
+    'allauth.account.auth_backends.AuthenticationBackend',
 )
 
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '883465917784-82atmsidsdqevjdtgvbmlj8bffi1gd1v.apps.googleusercontent.com'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+# SOCIAL ACCOUNT PROVIDERS
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': GOOGLE_CLIENT_ID,
+            'secret': GOOGLE_CLIENT_SECRET,
+            'key': '',
+        }
+    }
+}
+
+SWAGGER_SETTINGS = {
+    'LOGIN_URL': 'login',   # Set your login URL pattern name
+    'LOGOUT_URL': 'logout',  # Set your logout URL pattern name
+    # ... other settings ...
+}
+
+
+# SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '################################'
+# SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '################################################################'
 
 # Social Redirect URLs
 LOGIN_URL = 'login'
 LOGOUT_URL = 'logout'
+# LOGIN_REDIRECT_URL = '/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
