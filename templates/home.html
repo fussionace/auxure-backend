@@ -1,0 +1,9 @@
+{% load socialaccount %}
+
+<h1>Auxure backend - Home page</h1>
+
+{% if request.user.is_authenticated %}
+    <a href="{% url 'account_logout' %}">logout</a>
+{% else %}
+    <a href="{% provider_login_url 'google' %}">login with google</a>
+{% endif %}

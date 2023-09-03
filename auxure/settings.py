@@ -50,13 +50,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     # APPS FOR SOCIAL LOGIN
-    # /// Not in use
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'rest_framework_social_oauth2',
-    # //// In use
     'social_django',
     # END OF SOCIAL LOGIN APPS
     'rest_framework',
@@ -66,9 +64,9 @@ INSTALLED_APPS = [
     'order',
     'api',
     'rest_framework.authtoken',
-    'rest_framework_swagger',
+    # 'rest_framework_swagger',
+    'drf_yasg',
     'djoser',
-    # 'drf_yasg',
 ]
 
 MIDDLEWARE = [

@@ -1,6 +1,5 @@
 from django.urls import path, include, re_path
 from . import views
-from .views import GoogleLogin
 # Importing routers for the modelviewsets
 from rest_framework.routers import DefaultRouter
 # Import for nested routers
@@ -46,8 +45,6 @@ urlpatterns = [
     path("", include(perfume_router.urls)),
     # path("", include(cart_router.urls)),
     path("", include(users_router.urls)),
-    # path to google login => api/v1/auth/google/
-    path('auth/google/', GoogleLogin.as_view(), name='google-login'),
 ]
 
 
