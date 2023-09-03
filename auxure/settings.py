@@ -23,10 +23,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Environment variables
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
-
 GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = config('GOOGLE_CLIENT_SECRET')
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -52,13 +50,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     # APPS FOR SOCIAL LOGIN
-    # /// Not in use
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'rest_framework_social_oauth2',
-    # //// In use
     'social_django',
     # END OF SOCIAL LOGIN APPS
     'rest_framework',
@@ -68,8 +64,9 @@ INSTALLED_APPS = [
     'order',
     'api',
     'rest_framework.authtoken',
-    'djoser',
+    # 'rest_framework_swagger',
     'drf_yasg',
+    'djoser',
 ]
 
 MIDDLEWARE = [
@@ -223,13 +220,18 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+SWAGGER_SETTINGS = {
+    'LOGIN_URL': 'login',   # login URL pattern name
+    'LOGOUT_URL': 'logout',  # logout URL pattern name
+}
+
+
 # SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '################################'
 # SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '################################################################'
 
 # Social Redirect URLs
 LOGIN_URL = 'login'
 LOGOUT_URL = 'logout'
-# LOGIN_REDIRECT_URL = '/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 

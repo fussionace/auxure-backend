@@ -21,10 +21,18 @@ from django.urls import path, include, re_path
 # from allauth.account.views import ConfirmEmailView
 from django.conf import settings
 from django.conf.urls.static import static
+from rest_framework.permissions import AllowAny
+
+from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import LogoutView
 
 # Import for swagger
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view as swagger_get_schema_view
+from drf_yasg.views import get_schema_view
+
+# from rest_framework_swagger.views import get_swagger_view
+# from drf_yasg.renderers import SwaggerUIRenderer
 
 # Import for simplejwt
 
@@ -33,6 +41,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
+
 schema_view = swagger_get_schema_view(
     openapi.Info(
         title="Auxure API",
@@ -40,7 +49,11 @@ schema_view = swagger_get_schema_view(
         description="API documentation for Auxure project",
     ),
     public=True,
+
+    permission_classes=(AllowAny,),
 )
+
+# schema_view = get_swagger_view(title='Your API Documentation')
 
 def home(request):
     return render(request, "home.html")
@@ -49,17 +62,19 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home),
     # path('', include('store.urls')),
-    
+    path('login/', LoginView.as_view(), name='login'),
+    path('logout/', LogoutView.as_view(), name='logout'),
     # API root and documentation
-
-    path('api/v1/', include([path("", include("api.urls")),
-                             path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name="swagger_schema"),])),
+    path('api/v1/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('api/v1/', include('api.urls')),
+    
  
     # Djoser and simplejwt urls
 
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.social.urls')),
     path('auth/', include('djoser.urls.jwt')),
+
 
     path('accounts/', include('allauth.urls')),
 
