@@ -105,17 +105,17 @@ WSGI_APPLICATION = 'auxure.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-
 # DATABASES = {
-#     'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
 # }
+
+
+DATABASES = {
+    'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
+}
 
 
 # Password validation
@@ -221,9 +221,8 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 SWAGGER_SETTINGS = {
-    'LOGIN_URL': 'login',   # Set your login URL pattern name
-    'LOGOUT_URL': 'logout',  # Set your logout URL pattern name
-    # ... other settings ...
+    'LOGIN_URL': 'login',   # login URL pattern name
+    'LOGOUT_URL': 'logout',  # logout URL pattern name
 }
 
 
@@ -233,7 +232,6 @@ SWAGGER_SETTINGS = {
 # Social Redirect URLs
 LOGIN_URL = 'login'
 LOGOUT_URL = 'logout'
-# LOGIN_REDIRECT_URL = '/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
