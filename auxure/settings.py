@@ -29,6 +29,8 @@ GOOGLE_CLIENT_SECRET = config('GOOGLE_CLIENT_SECRET')
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+
+# Activate this after fixing the proiduction env file
 # SECRET_KEY = '################################'
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -65,7 +67,8 @@ INSTALLED_APPS = [
     'api',
     'rest_framework.authtoken',
     # 'rest_framework_swagger',
-    'drf_yasg',
+    # 'drf_yasg',
+    'drf_spectacular',
     'djoser',
 ]
 
@@ -172,6 +175,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 5,
     'COERCE_DECIMAL_TO_STRING': False,
+
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 
@@ -220,11 +225,17 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-SWAGGER_SETTINGS = {
-    'LOGIN_URL': 'login',   # login URL pattern name
-    'LOGOUT_URL': 'logout',  # logout URL pattern name
-}
 
+# SWAGGER_SETTINGS = {
+#     'LOGIN_URL': 'login',   # login URL pattern name
+#     'LOGOUT_URL': 'logout',  # logout URL pattern name
+# }
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Auxure API Service',
+    'VERSION': '1.0.0',
+    'DESCRIPTION': 'API documentation for Auxure project',
+}
 
 # SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '################################'
 # SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '################################################################'
