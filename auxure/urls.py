@@ -23,13 +23,15 @@ from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.permissions import AllowAny
 
-from django.contrib.auth.views import LoginView
-from django.contrib.auth.views import LogoutView
+# from django.contrib.auth.views import LoginView
+# from django.contrib.auth.views import LogoutView
+
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 # Import for swagger
-from drf_yasg import openapi
-from drf_yasg.views import get_schema_view as swagger_get_schema_view
-from drf_yasg.views import get_schema_view
+# from drf_yasg import openapi
+# from drf_yasg.views import get_schema_view as swagger_get_schema_view
+# from drf_yasg.views import get_schema_view
 
 # from rest_framework_swagger.views import get_swagger_view
 # from drf_yasg.renderers import SwaggerUIRenderer
@@ -42,16 +44,16 @@ from rest_framework_simplejwt.views import (
 )
 
 
-schema_view = swagger_get_schema_view(
-    openapi.Info(
-        title="Auxure API",
-        default_version="1.0.0",
-        description="API documentation for Auxure project",
-    ),
-    public=True,
+# schema_view = swagger_get_schema_view(
+#     openapi.Info(
+#         title="Auxure API",
+#         default_version="1.0.0",
+#         description="API documentation for Auxure project",
+#     ),
+#     public=True,
 
-    permission_classes=(AllowAny,),
-)
+#     permission_classes=(AllowAny,),
+# )
 
 # schema_view = get_swagger_view(title='Your API Documentation')
 
@@ -62,10 +64,18 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home),
     # path('', include('store.urls')),
-    path('login/', LoginView.as_view(), name='login'),
-    path('logout/', LogoutView.as_view(), name='logout'),
+    # path('login/', LoginView.as_view(), name='login'),
+    # path('logout/', LogoutView.as_view(), name='logout'),
     # API root and documentation
-    path('api/v1/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    # path('api/v1/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    # Optional: Include Swagger UI view
+    # path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/v1/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    # Optional: Include ReDoc view
+    path('api/docs/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+   
     path('api/v1/', include('api.urls')),
     
  

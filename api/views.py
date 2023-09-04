@@ -53,6 +53,8 @@ from social_django.utils import psa
 import jwt
 from datetime import datetime, timedelta
 
+from drf_spectacular.utils import extend_schema
+
 # Create your views here.
 
 # The modified view function to also fetch similar perfumes and display on the perfume detail page
@@ -70,6 +72,7 @@ class PerfumesViewSet(ModelViewSet):
     # pagination_class = PageNumberPagination
     # page_size = 3
 
+    @extend_schema(responses=CategorySerializer)
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
