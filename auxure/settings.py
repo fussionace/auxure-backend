@@ -30,7 +30,6 @@ GOOGLE_CLIENT_SECRET = config('GOOGLE_CLIENT_SECRET')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-# Activate this after fixing the proiduction env file
 # SECRET_KEY = '################################'
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -66,8 +65,6 @@ INSTALLED_APPS = [
     'order',
     'api',
     'rest_framework.authtoken',
-    # 'rest_framework_swagger',
-    # 'drf_yasg',
     'drf_spectacular',
     'djoser',
 ]
@@ -189,10 +186,10 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
     # Activate this when you want to use bearer tokens in postman
-    # "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_TYPES": ("Bearer",),
 
     # Activate this when you want to work on the browser ModHeader extension
-    "AUTH_HEADER_TYPES": ("JWT",),
+    # "AUTH_HEADER_TYPES": ("JWT",),
 }
 
 DJOSER = {
@@ -225,20 +222,16 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-
-# SWAGGER_SETTINGS = {
-#     'LOGIN_URL': 'login',   # login URL pattern name
-#     'LOGOUT_URL': 'logout',  # logout URL pattern name
-# }
-
+# Swagger UI page display information
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Auxure API Service',
     'VERSION': '1.0.0',
-    'DESCRIPTION': 'API documentation for Auxure project',
+    'DESCRIPTION': 'API documentation for Auxure Ecommerce project',
+    "CONTACT": "fussionace@gmail.com",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "DISABLE_ERRORS_AND_WARNINGS": True,
 }
 
-# SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '################################'
-# SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '################################################################'
 
 # Social Redirect URLs
 LOGIN_URL = 'login'
