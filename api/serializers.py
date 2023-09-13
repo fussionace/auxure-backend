@@ -50,32 +50,61 @@ class PerfumeImageSerializer(serializers.ModelSerializer):
 
 
 
+# class PerfumeSerializer(serializers.ModelSerializer):
+#     images = PerfumeImageSerializer(many=True, read_only=True)
+
+#     uploaded_images = serializers.ListField(
+#         child = serializers.ImageField(max_length=1000000, allow_empty_file=False, use_url=False),
+#         write_only=True
+#     )
+
+#     class Meta:
+#         model = Perfume
+#         fields = ['id', 'name', 'description', 'price', 'category', 'inventory', 'images', 'uploaded_images']
+    
+#     # Serializing the category field to have more context 
+#     # category = CategorySerializer()
+    
+
+#     def create(self, validated_data):
+#         uploaded_images = validated_data.pop("uploaded_images") # Removes the uploaded images from the list of data
+#         perfume = Perfume.objects.create(**validated_data) #unpacks the validated data
+
+#         for image in uploaded_images:
+#             new_perfume_image = PerfumeImage.objects.create(perfume=perfume, image=image)
+
+#         return perfume
+
+
 class PerfumeSerializer(serializers.ModelSerializer):
     images = PerfumeImageSerializer(many=True, read_only=True)
-
     uploaded_images = serializers.ListField(
-        child = serializers.ImageField(max_length=1000000, allow_empty_file=False, use_url=False),
+        child=serializers.ImageField(max_length=1000000, allow_empty_file=False),
         write_only=True
     )
 
     class Meta:
         model = Perfume
         fields = ['id', 'name', 'description', 'price', 'category', 'inventory', 'images', 'uploaded_images']
-    
-    # Serializing the category field to have more context 
-    # category = CategorySerializer()
-    
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # Update image URLs to use MEDIA_URL
+        if data['images']:
+            for image_data in data['images']:
+                image_data['image'] = self.context['request'].build_absolute_uri(image_data['image'])
+        return data
 
     def create(self, validated_data):
-        uploaded_images = validated_data.pop("uploaded_images") # Removes the uploaded images from the list of data
-        perfume = Perfume.objects.create(**validated_data) #unpacks the validated data
+        uploaded_images = validated_data.pop("uploaded_images")
+        perfume = Perfume.objects.create(**validated_data)
 
         for image in uploaded_images:
             new_perfume_image = PerfumeImage.objects.create(perfume=perfume, image=image)
 
         return perfume
 
-    
+
 
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
