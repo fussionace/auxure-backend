@@ -15,6 +15,12 @@ from pathlib import Path
 from datetime import timedelta
 import dj_database_url
 import os
+# Imports for cloudinary storage
+import cloudinary
+import cloudinary_storage
+# import cloudinary.uploader
+# import cloudinary.api
+# from storages.backends import cloudinary as cloudinary_storage
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -58,6 +64,11 @@ INSTALLED_APPS = [
     'rest_framework_social_oauth2',
     'social_django',
     # END OF SOCIAL LOGIN APPS
+
+    # CLOUDINARY
+    'cloudinary',
+    'cloudinary_storage',
+    # END OF CLOUDINARY
     'rest_framework',
     'django_filters',
     'userprofile',
@@ -242,6 +253,32 @@ SPECTACULAR_SETTINGS = {
     "DISABLE_ERRORS_AND_WARNINGS": True,
 }
 
+
+# Cloudinary configurations
+# cloudinary.config(
+#     cloud_name='your_cloud_name',
+#     api_key='your_api_key',
+#     api_secret='your_api_secret'
+# )
+
+# # Use Cloudinary as the default storage for media files
+# DEFAULT_FILE_STORAGE = 'storages.backends.cloudinary.CloudinaryStorage'
+
+# import cloudinary
+          
+# cloudinary.config( 
+#   cloud_name = "da7ql20hv", 
+#   api_key = "592197729264212", 
+#   api_secret = "hdYkh6AmIIm2VmciClHEL7FdGCY" 
+# )
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'da7ql20hv',
+    'API_KEY': '592197729264212',
+    'API_SECRET': 'hdYkh6AmIIm2VmciClHEL7FdGCY'
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Social Redirect URLs
 LOGIN_URL = 'login'
