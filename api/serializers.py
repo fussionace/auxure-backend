@@ -87,6 +87,8 @@ class PerfumeSerializer(serializers.ModelSerializer):
         model = Perfume
         fields = ['id', 'name', 'description', 'price', 'category', 'inventory', 'images', 'uploaded_images']
 
+    category = CategorySerializer()
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         # Update image URLs to use MEDIA_URL
