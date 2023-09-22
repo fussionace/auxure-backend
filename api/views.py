@@ -8,7 +8,7 @@ from django.conf import settings
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
-from .serializers import PerfumeSerializer, CategorySerializer, ReviewSerializer, CartSerializer, CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer, OrderSerializer, CheckoutSerializer
+from .serializers import PerfumeSerializer, SimplePerfumeSerializer, CategorySerializer, ReviewSerializer, CartSerializer, CartItemSerializer, AddCartItemSerializer, UpdateCartItemSerializer, OrderSerializer, CheckoutSerializer
 from store.models import Category, Perfume, Review, Cart, Cartitems
 from order.models import Order, OrderItem
 from rest_framework.response import Response
@@ -58,6 +58,7 @@ from drf_spectacular.utils import extend_schema
 # Create your views here.
 
 # The modified view function to also fetch similar perfumes and display on the perfume detail page
+# Viewset for Perfumes GRID VIEW
 class PerfumesViewSet(ModelViewSet):
     queryset = Perfume.objects.all()
     serializer_class = PerfumeSerializer
@@ -72,6 +73,50 @@ class PerfumesViewSet(ModelViewSet):
     # pagination_class = PageNumberPagination
     # page_size = 3
 
+    @extend_schema(responses=CategorySerializer)
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+
+        # Fetch similar perfumes based on title and gender
+        similar_perfumes = Perfume.objects.filter(
+            category__title=instance.category.title,
+            category__gender=instance.category.gender,
+            price__lte=instance.price + 50,   #Defining the price range
+            price__gte=instance.price - 50
+        ).exclude(id=instance.id)
+
+        similar_perfume_serializer = PerfumeSerializer(similar_perfumes, many=True)
+
+        # Combine the perfume details and similar perfumes in the response
+        response_data = {
+            'perfume': serializer.data,
+            'similar_perfumes': similar_perfume_serializer.data
+        }
+
+        return Response(response_data)
+
+
+# Viewset for Perfumes LIST VIEW
+class CustomListViewPagination(PageNumberPagination):
+    page_size = 4
+
+class ListViewSet(ModelViewSet):
+    queryset = Perfume.objects.all()
+    serializer_class = PerfumeSerializer
+    permission_classes = [permissions.IsAdminOrReadOnly] # Inheriting custom permission
+
+    # Implementing filter and search
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = PerfumeFilter
+    search_fields = ['name', 'description']
+    ordering_fields = ['price']
+
+    def get_queryset(self):
+        # Set custom pagination class before executing the queryset
+        self.pagination_class = CustomListViewPagination
+        return Perfume.objects.all()
+    
     @extend_schema(responses=CategorySerializer)
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()

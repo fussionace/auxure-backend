@@ -16,7 +16,7 @@ router.register("categories", views.CategoriesViewSet)
 router.register("carts", views.CartViewSet)
 router.register(r'orders', views.OrderViewSet)
 
-
+# router.register("lists", views.ListViewSet)
 
 # user profile route
 router.register(r'profiles', views.UserProfileViewSet)
@@ -29,6 +29,12 @@ router.register(r'users', views.UserViewSet)
 perfume_router = routers.NestedDefaultRouter(router, "perfumes", lookup="perfume")
 perfume_router.register("reviews", views.ReviewViewSet, basename="perfume-reviews")
 
+
+# PERFUMES LIST VIEW ROUTER
+list_router = routers.DefaultRouter()
+list_router.register("perfumes-list-view", views.ListViewSet, basename="perfumes-list-view")
+
+
 # cart child router
 cart_router = routers.NestedDefaultRouter(router, "carts", lookup="cart")
 cart_router.register("items", views.CartItemViewSet, basename="cart-items")
@@ -40,19 +46,23 @@ users_router = routers.NestedDefaultRouter(router, "users", lookup="users")
 # The id within the url is for the specific product so the review will be automatically dropped for that product
 # http://127.0.0.1:8000/api/carts/
 
+
 urlpatterns = [
     path("", include(router.urls)),
-    path("", include(perfume_router.urls)),
-    # path("", include(cart_router.urls)),
-    path("", include(users_router.urls)),
+    path("perfumes/", include(perfume_router.urls)),
+    path("carts/", include(cart_router.urls)),
+    path("users/", include(users_router.urls)),
+    # perfumes-list-view pattern
+    path("", include(list_router.urls)), 
 ]
 
 
 
+# # Url patterns for the cart and checkout
+# # /carts/ - List and create carts
+# # /carts/{cart_pk}/ - Retrieve and delete a specific cart
+# # /carts/{cart_pk}/items/ - List and create cart items for a specific cart
+# # /carts/{cart_pk}/items/{item_pk}/ - Retrieve, update, and delete a specific cart item
+# # /carts/{cart_pk}/checkout/ - Process the checkout for a specific cart (added functionality)
 
-# Url patterns for the cart and checkout
-# /carts/ - List and create carts
-# /carts/{cart_pk}/ - Retrieve and delete a specific cart
-# /carts/{cart_pk}/items/ - List and create cart items for a specific cart
-# /carts/{cart_pk}/items/{item_pk}/ - Retrieve, update, and delete a specific cart item
-# /carts/{cart_pk}/checkout/ - Process the checkout for a specific cart (added functionality)
+# http://127.0.0.1:8000/api/v1/perfumes-list-view/

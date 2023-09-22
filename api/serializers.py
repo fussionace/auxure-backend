@@ -106,6 +106,24 @@ class PerfumeSerializer(serializers.ModelSerializer):
 
         return perfume
 
+    # category = CategorySerializer()
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # Update image URLs to use MEDIA_URL
+        if data['images']:
+            for image_data in data['images']:
+                image_data['image'] = self.context['request'].build_absolute_uri(image_data['image'])
+        return data
+
+    def create(self, validated_data):
+        uploaded_images = validated_data.pop("uploaded_images")
+        perfume = Perfume.objects.create(**validated_data)
+
+        for image in uploaded_images:
+            new_perfume_image = PerfumeImage.objects.create(perfume=perfume, image=image)
+
+        return perfume
 
 
 class ReviewSerializer(serializers.ModelSerializer):
