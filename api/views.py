@@ -26,8 +26,7 @@ from api.filters import PerfumeFilter
 from rest_framework.filters import SearchFilter, OrderingFilter
 # Importing for pagination
 from rest_framework.pagination import PageNumberPagination
-
-
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 #userProfile 
 from userprofile.models import UserProfile
@@ -57,21 +56,49 @@ from drf_spectacular.utils import extend_schema
 
 # Create your views here.
 
-# The modified view function to also fetch similar perfumes and display on the perfume detail page
-# Viewset for Perfumes GRID VIEW
+# Custom pagination class for perfumes
+class CustomPerfumesPagination(PageNumberPagination):
+    page_size_query_param = 'size'  # The size parameter comes from what was set in the settings file
+    max_page_size = 10  # Maximum page size is adjustable
+
+    def get_next_link(self):
+        if not self.page.has_next():
+            return None
+
+        url = self.request.build_absolute_uri()
+        page_number = self.page.next_page_number()
+        size = self.request.query_params.get(self.page_size_query_param, self.page_size)
+
+        # Parsing the URL into its components
+        parsed_url = urlparse(url)
+        query_params = parse_qs(parsed_url.query)
+
+        # Updating the 'size' parameter
+        query_params[self.page_size_query_param] = size
+
+        # Updating the 'page' parameter
+        query_params['page'] = page_number
+
+        # Encoding the updated query parameters and construct the next link
+        updated_query = urlencode(query_params, doseq=True)
+        url_parts = list(parsed_url)
+        url_parts[4] = updated_query  # Update the query component
+        return urlunparse(url_parts)
+
+
 class PerfumesViewSet(ModelViewSet):
     queryset = Perfume.objects.all()
     serializer_class = PerfumeSerializer
-    permission_classes = [permissions.IsAdminOrReadOnly] # Inheriting custom permission
+    permission_classes = [permissions.IsAdminOrReadOnly]  # Using your custom permission class
 
     # Implementing filter and search
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = PerfumeFilter
     search_fields = ['name', 'description']
-    ordering_fields = ['price']     #You can order by any other field or add other fields
-    # Implementing Pagination - Not necessary except to overide the setting in the restframework dictionary
-    # pagination_class = PageNumberPagination
-    # page_size = 3
+    ordering_fields = ['price']  # You can order by any other field or add other fields
+
+    # Set custom pagination class
+    pagination_class = CustomPerfumesPagination
 
     @extend_schema(responses=CategorySerializer)
     def retrieve(self, request, *args, **kwargs):
@@ -82,51 +109,7 @@ class PerfumesViewSet(ModelViewSet):
         similar_perfumes = Perfume.objects.filter(
             category__title=instance.category.title,
             category__gender=instance.category.gender,
-            price__lte=instance.price + 50,   #Defining the price range
-            price__gte=instance.price - 50
-        ).exclude(id=instance.id)
-
-        similar_perfume_serializer = PerfumeSerializer(similar_perfumes, many=True)
-
-        # Combine the perfume details and similar perfumes in the response
-        response_data = {
-            'perfume': serializer.data,
-            'similar_perfumes': similar_perfume_serializer.data
-        }
-
-        return Response(response_data)
-
-
-# Viewset for Perfumes LIST VIEW
-class CustomListViewPagination(PageNumberPagination):
-    page_size = 4
-
-class ListViewSet(ModelViewSet):
-    queryset = Perfume.objects.all()
-    serializer_class = PerfumeSerializer
-    permission_classes = [permissions.IsAdminOrReadOnly] # Inheriting custom permission
-
-    # Implementing filter and search
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_class = PerfumeFilter
-    search_fields = ['name', 'description']
-    ordering_fields = ['price']
-
-    def get_queryset(self):
-        # Set custom pagination class before executing the queryset
-        self.pagination_class = CustomListViewPagination
-        return Perfume.objects.all()
-    
-    @extend_schema(responses=CategorySerializer)
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-
-        # Fetch similar perfumes based on title and gender
-        similar_perfumes = Perfume.objects.filter(
-            category__title=instance.category.title,
-            category__gender=instance.category.gender,
-            price__lte=instance.price + 50,   #Defining the price range
+            price__lte=instance.price + 50,  # Defining the price range
             price__gte=instance.price - 50
         ).exclude(id=instance.id)
 
