@@ -16,8 +16,6 @@ router.register("categories", views.CategoriesViewSet)
 router.register("carts", views.CartViewSet)
 router.register(r'orders', views.OrderViewSet)
 
-# router.register("lists", views.ListViewSet)
-
 # user profile route
 router.register(r'profiles', views.UserProfileViewSet)
 router.register(r'users', views.UserViewSet)
@@ -31,8 +29,8 @@ perfume_router.register("reviews", views.ReviewViewSet, basename="perfume-review
 
 
 # PERFUMES LIST VIEW ROUTER
-list_router = routers.DefaultRouter()
-list_router.register("perfumes-list-view", views.ListViewSet, basename="perfumes-list-view")
+# list_router = routers.DefaultRouter()
+# list_router.register("perfumes-list-view", views.ListViewSet, basename="perfumes-list-view")
 
 
 # cart child router
@@ -52,8 +50,9 @@ urlpatterns = [
     path("perfumes/", include(perfume_router.urls)),
     path("carts/", include(cart_router.urls)),
     path("users/", include(users_router.urls)),
+    
     # perfumes-list-view pattern
-    path("", include(list_router.urls)), 
+    # path("", include(list_router.urls)), 
 ]
 
 
