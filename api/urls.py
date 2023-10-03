@@ -47,8 +47,8 @@ users_router = routers.NestedDefaultRouter(router, "users", lookup="users")
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("perfumes/", include(perfume_router.urls)),
-    path("carts/", include(cart_router.urls)),
+    path("", include(perfume_router.urls)),
+    path("", include(cart_router.urls)),
     path("users/", include(users_router.urls)),
     
     # perfumes-list-view pattern
