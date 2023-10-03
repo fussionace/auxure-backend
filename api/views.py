@@ -180,7 +180,7 @@ class CartViewSet(CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, Gener
 
 class CartItemViewSet(ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
-    # Helps us get only the requested item
+    # Helps us get only items associated to the particular cart
     def get_queryset(self):
         return Cartitems.objects.filter(cart_id=self.kwargs['cart_pk'])
     
