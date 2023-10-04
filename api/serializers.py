@@ -226,10 +226,12 @@ class CartSerializer(serializers.ModelSerializer):
     # id should be read only since its generated from within
     items = CartItemSerializer(many=True, read_only=True)
     grand_total = serializers.SerializerMethodField(method_name="cart_total")
-    checkout = CheckoutSerializer(write_only=True) # Nested serializer for checkout
+    # You can activate the checkout below and then add it to the fields when you're ready
+    # checkout = CheckoutSerializer(write_only=True) # Nested serializer for checkout
     class Meta:
         model = Cart
-        fields = ['id', 'items', 'grand_total', 'checkout'] # Added the checkout field
+        fields = ['id', 'items', 'grand_total']
+        # fields = ['id', 'items', 'grand_total', 'checkout'] # Added the checkout field
 
     def cart_total(self, cart:Cart):
         items = cart.items.all()
