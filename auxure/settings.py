@@ -209,10 +209,10 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
     # Activate this when you want to use bearer tokens in postman
-    "AUTH_HEADER_TYPES": ("Bearer",),
+    # "AUTH_HEADER_TYPES": ("Bearer",),
 
     # Activate this when you want to work on the browser ModHeader extension
-    # "AUTH_HEADER_TYPES": ("JWT",),
+    "AUTH_HEADER_TYPES": ("JWT",),
 }
 
 DJOSER = {
