@@ -34,3 +34,8 @@ class CanCreateProfile(BasePermission):
     def has_permission(self, request, view):
         # Allow admin users to create profiles
         return request.user.is_staff
+
+
+class IsOrderOwnerOrAdmin(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return obj.user == request.user or (request.user.is_authenticated and request.user.is_staff)

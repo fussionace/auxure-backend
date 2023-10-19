@@ -38,7 +38,7 @@ API_SECRET = config('API_SECRET')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-# SECRET_KEY = '################################'
+# SECRET_KEY = '#################################'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
@@ -209,10 +209,10 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
     # Activate this when you want to use bearer tokens in postman
-    "AUTH_HEADER_TYPES": ("Bearer",),
+    # "AUTH_HEADER_TYPES": ("Bearer",),
 
     # Activate this when you want to work on the browser ModHeader extension
-    # "AUTH_HEADER_TYPES": ("JWT",),
+    "AUTH_HEADER_TYPES": ("JWT",),
 }
 
 DJOSER = {

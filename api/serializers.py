@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.db import transaction
 from rest_framework import serializers
 from store.models import Perfume, PerfumeImage, Category, Review, Cart, Cartitems
 from order.models import Order, OrderItem
@@ -48,32 +49,6 @@ class PerfumeImageSerializer(serializers.ModelSerializer):
             model = PerfumeImage
             fields = ['id', 'perfume', 'image']
 
-
-
-# class PerfumeSerializer(serializers.ModelSerializer):
-#     images = PerfumeImageSerializer(many=True, read_only=True)
-
-#     uploaded_images = serializers.ListField(
-#         child = serializers.ImageField(max_length=1000000, allow_empty_file=False, use_url=False),
-#         write_only=True
-#     )
-
-#     class Meta:
-#         model = Perfume
-#         fields = ['id', 'name', 'description', 'price', 'category', 'inventory', 'images', 'uploaded_images']
-    
-#     # Serializing the category field to have more context 
-#     # category = CategorySerializer()
-    
-
-#     def create(self, validated_data):
-#         uploaded_images = validated_data.pop("uploaded_images") # Removes the uploaded images from the list of data
-#         perfume = Perfume.objects.create(**validated_data) #unpacks the validated data
-
-#         for image in uploaded_images:
-#             new_perfume_image = PerfumeImage.objects.create(perfume=perfume, image=image)
-
-#         return perfume
 
 
 class PerfumeSerializer(serializers.ModelSerializer):
@@ -241,12 +216,12 @@ class CartSerializer(serializers.ModelSerializer):
     
 
 class OrderItemSerializer(serializers.ModelSerializer):
-    #product = PerfumeSerializer()
+    perfume = SimplePerfumeSerializer()
     price = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
 
     class Meta:
         model = OrderItem
-        fields = ['product','quantity','price']
+        fields = ['id', 'quantity', 'price', 'perfume']
     
     
 
@@ -254,7 +229,9 @@ class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
     class Meta:
         model = Order
-        fields = ['id','user','first_name','last_name','email','country','city','state','additional_info','address','zipcode','phone','total_amount','items','order_number']
+        # fields = ['id','user','first_name','last_name','email','country','city','state','additional_info','address','zipcode','phone','total_amount','items','order_number']
+        # The status field below refers to payment status
+        fields = ['id', 'user', 'items', 'created_at', 'status']
         read_only_fields = ['status','user','is_completed','is_cancelled']
 
 
@@ -272,6 +249,52 @@ class OrderSerializer(serializers.ModelSerializer):
             price = product.price * quantity
             OrderItem.objects.create(order=order,product=product,quantity=quantity,price=price)
         return order
+    
+
+class UpdateOrderSerializer(serializers.ModelSerializer):
+     class Meta:
+          model = Order
+          fields = ['status']
+
+
+class CreateOrderSerilaizer(serializers.Serializer):
+     cart_id = serializers.UUIDField()
+
+     def validate_cart_id(self, cart_id):
+          if not Cart.objects.filter(pk=cart_id).exists():
+               raise serializers.ValidationError("No cart with the given ID was found")
+          if Cartitems.objects.filter(cart_id=cart_id).count() == 0:
+               raise serializers.ValidationError("The given cart is empty")
+          return cart_id
+
+     def save(self, **kwargs):
+        #   Wrapping all the code in transaction so they can be excuted at once to avoid
+        # inconsistencies in the cases of a failure
+          with transaction.atomic():
+            cart_id = self.validated_data['cart_id']
+        #   print(self.validated_data['cart_id'])
+        #   print(self.context['user_id'])
+
+          (user, created) = User.objects.get_or_create(id=self.context['user_id'])
+          order = Order.objects.create(user=user)
+
+          cart_items = Cartitems.objects.select_related('perfume').filter(cart_id=cart_id)
+
+          order_items = [
+                OrderItem(
+                    order = order,
+                    perfume = item.perfume,
+                    price = item.perfume.price,
+                    quantity = item.quantity
+                ) for item in cart_items
+          ]
+
+          OrderItem.objects.bulk_create(order_items)
+
+        #   Delete the cart after the order has been placed
+          Cart.objects.filter(pk=cart_id).delete()
+
+          return order
 
 
 # userProfile serialization

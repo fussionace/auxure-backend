@@ -31,7 +31,7 @@ class Order(models.Model):
     additional_info = models.TextField(null=False)
     address = models.TextField()
     zipcode = models.CharField(max_length=100)
-    phone = models.IntegerField()
+    phone = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     order_number = models.CharField(max_length=25, null=True, unique=True)
@@ -59,7 +59,7 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
-    product = models.ForeignKey(Perfume, related_name='items', on_delete=models.CASCADE)
+    perfume = models.ForeignKey(Perfume, related_name='items', on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     quantity = models.PositiveIntegerField(default=1)
     #sub_total = models.DecimalField(max_digits=10, decimal_places=2)
